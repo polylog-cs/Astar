@@ -5,6 +5,7 @@ from manim import config as global_config
 
 import solarized
 from util import *
+from util_graph import *
 
 class Polylog(Scene):
     def construct(self):
@@ -31,3 +32,27 @@ class Polylog(Scene):
             *[FadeOut(o) for o in self.mobjects]
         )
         self.wait()
+
+class Explore(Scene):
+    def construct(self):
+
+        # self.move_camera(
+        #     phi=75 * DEGREES,
+        # )
+
+        vertices = [1, 2, 3, 4]
+        edges = [(1, 2), (2, 3), (3, 4), (1, 3), (1, 4)]
+        g = CustomGraph(vertices, edges)
+        
+        self.play(Create(g))
+        self.wait()
+        for edge in edges:
+            g.create_edge_length(edge, 1, 0)
+
+        self.play(g.show_edge_lengths(g.edges))
+        g.setup_potentials()
+        self.play(
+            g.vertex_potentials[1].animate.set_value(1)
+        )
+        self.wait()
+
