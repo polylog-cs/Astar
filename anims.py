@@ -41,18 +41,37 @@ class Explore(Scene):
         # )
 
         vertices = [1, 2, 3, 4]
-        edges = [(1, 2), (2, 3), (3, 4), (1, 3), (1, 4)]
-        g = CustomGraph(vertices, edges)
+        g = CustomGraph(vertices, [])
         
         self.play(Create(g))
         self.wait()
+
+        self.play(g.add_directed_edge(1, 4, 0.05))
+        self.play(g.add_directed_edge(4, 1, -0.05))
+        self.play(g.add_directed_edge(1, 2, 0.0))
+        self.play(g.add_directed_edge(1, 3, 0.0))
+        self.play(g.add_directed_edge(4, 2, 0.0))
+
+        self.play(g.vertices[1].animate.shift(2*RIGHT))
+        self.play(g.vertices[4].animate.scale(5))
+        self.wait()
+
+        self.play(g.show_edge_lengths(g.edges))
+        self.wait()
+        
+        g.setup_potentials()
+        self.play(
+            g.vertex_potentials[4].animate.set_value(-0.5)
+        )
+        self.wait()
+
+        self.play(
+            g.run_dijkstra(1, 4, 1)
+        )
+
+        return
         for edge in edges:
             g.create_edge_length(edge, 1, 0)
 
         self.play(g.show_edge_lengths(g.edges))
-        g.setup_potentials()
-        self.play(
-            g.vertex_potentials[1].animate.set_value(1)
-        )
-        self.wait()
-
+        
