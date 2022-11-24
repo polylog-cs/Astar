@@ -145,7 +145,7 @@ class CustomGraph(Graph):
 
         return AnimationGroup(Create(edge))
 
-    def run_dijkstra(self, start, end, speed):
+    def run_dijkstra(self, start_node, end_node, speed):
         # initialize potentials and weights to default values to be sure
         for edge in self.edges:
             if not edge in self.edge_weights_vals:
@@ -160,14 +160,16 @@ class CustomGraph(Graph):
 
         G = self.get_adjacency_list()
         q = PriorityQueue()
-        q.put((0, start, -1))
+        q.put((0, start_node, -1))
         
-        visited = set()
+        distances = {}
 
+        mover_anims = []
         while not q.empty():
             (dist, node, predecessor) = q.get()
-            if not node in visited:
-                visited.add(node)
+            if not node in distances:
+                distances[node] = dist
+                #print(node, dist)
 
                 if predecessor != -1:
                     all_anims.append(
@@ -178,7 +180,7 @@ class CustomGraph(Graph):
                     )
 
                 for neighbor in G[node]:
-                    if not neighbor in visited:
+                    if not neighbor in distances:
                         edge = (node, neighbor)
                         if self.directed == False:
                             edge = (min(node, neighbor), max(node, neighbor))
@@ -187,15 +189,29 @@ class CustomGraph(Graph):
                         q.put((new_dist, neighbor, node))
 
                         mover = Circle(radius = 0.1, color = RED).move_to(self.vertices[node].get_center())
-                        all_anims.append(
-                            Succession(
-                                Wait(dist * speed),
-                                AnimationGroup(
-                                    mover.animate.move_to(self.vertices[neighbor].get_center()),
-                                    run_time = ( dist + self.edge_weights_vals[edge] + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value() ) * speed,
-                                )
-                            ) # TODO fix
-                        )
+                        mover_anims.append((mover, dist, self.vertices[neighbor].get_center(), dist + self.edge_weights_vals[edge] + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value()))
+        
+        print(distances[end_node])
+        for anim in mover_anims:
+            (mover, start_time, new_pos, finish_time) = anim
+            print(start_time, finish_time)
+            #finish_time = min(finish_time, distances[end_node])
+            if start_time >= distances[end_node]:
+                continue
+            if finish_time >= distances[end_node]:
+                ratio = (distances[end_node] - start_time) *1.0 / (finish_time - start_time)
+                finish_time = start_time + ratio * (finish_time - start_time)
+                new_pos = ratio * new_pos + (1-ratio) * mover.get_center()
+
+            all_anims.append(
+                Succession(
+                    Wait(start_time * speed),
+                    AnimationGroup(
+                        mover.animate.move_to(new_pos),
+                        run_time = ( finish_time - start_time ) * speed,
+                    )
+                )
+            )
 
         return AnimationGroup(*all_anims)
         

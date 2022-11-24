@@ -58,7 +58,7 @@ class Explore(Scene):
 
         self.play(g.show_edge_lengths(g.edges))
         self.wait()
-        
+
         g.setup_potentials()
         self.play(
             g.vertex_potentials[4].animate.set_value(-0.5)
@@ -66,8 +66,9 @@ class Explore(Scene):
         self.wait()
 
         self.play(
-            g.run_dijkstra(1, 4, 1)
+            g.run_dijkstra(1, 2, 1)
         )
+        self.wait(5)
 
         return
         for edge in edges:
@@ -75,3 +76,6 @@ class Explore(Scene):
 
         self.play(g.show_edge_lengths(g.edges))
         
+class Chapter3(Scene):
+    def construct(self):
+        pass
