@@ -14,6 +14,9 @@ class CustomGraph(Graph):
     vertex_potentials = {}
     directed = True
 
+    def make_directed(self, directed):
+        self.directed = directed
+
     def get_adjacency_list(self):
         adj = dict([(v, []) for v in self.vertices])
         for v1, v2 in self.edges:
@@ -27,10 +30,10 @@ class CustomGraph(Graph):
         return self.get_adjacency_list()[vertex]
 
 
-    def create_name(self, vertex, name, offset):
-        self.vertex_names[vertex] = Tex(name, color=GRAY).move_to(vertex.get_center()).shift(offset)
+    def create_name(self, vertex, name, offset, scale = 0.5):
+        self.vertex_names[vertex] = Tex(name, color=GRAY).scale(scale).move_to(self.vertices[vertex].get_center()).shift(offset)
         self.vertex_names[vertex].add_updater(
-            lambda mob: mob.move_to(vertex.get_center()).shift(offset)
+            lambda mob: mob.move_to(self.vertices[vertex].get_center()).shift(offset)
         )
 
     def show_names(self, vertices):
@@ -48,8 +51,12 @@ class CustomGraph(Graph):
         return AnimationGroup(*anims)
 
 
-    def create_edge_length(self, edge, weight, offset):
-        number = DecimalNumber(weight, color = GRAY)
+    def create_edge_length(self, edge, weight, offset = 0*RIGHT):
+        number = DecimalNumber(
+            weight, 
+            num_decimal_places=1,
+            color = GRAY
+        ).scale(0.5)
         self.edge_weights_objs[edge] = number
         self.edge_weights_vals[edge] = weight
         number.move_to(self.edges[edge].get_center()).shift(offset)
@@ -77,17 +84,20 @@ class CustomGraph(Graph):
             self.edge_weights_objs[edge].animate().increment_value(change),
         )
 
-    def setup_potentials(self):
+    def setup_potentials(self, potentials = {}, rate = 1):
         # updater: edge_length = original_edge_length + potential(v) - potential(u)
         # ideally (but maybe hard), add also updater on the color, so that when it decreases/increases it gets a shade of green/red based on how fast it increases/decreases
         for v in self.vertices:
             self.vertex_potentials[v] = ValueTracker(0)
+            if v in potentials:
+                self.vertex_potentials[v] = ValueTracker(potentials[v])
+
             self.vertices[v].add_updater(
                 lambda mob, v=v: mob.move_to(
                     [
                         mob.get_center()[0],
                         mob.get_center()[1],
-                        self.vertex_potentials[v].get_value()
+                        self.vertex_potentials[v].get_value() * rate
                     ]
                 )
             )
@@ -96,41 +106,48 @@ class CustomGraph(Graph):
             self.edge_weights_objs[edge].add_updater(
                 lambda mob, edge = edge: mob.set_value(
                     self.edge_weights_vals[edge] 
-                    + self.vertex_potentials[edge[1]].get_value() 
+                    + self.vertex_potentials[edge[1]].get_value()
                     - self.vertex_potentials[edge[0]].get_value()
                 )
             )
 
+    def gen_zero_potentials(self):
+        pots = {}
+        for v in self.vertices:
+            pots[v] = 0
+        return pots
+
+    def gen_air_potentials(self, source):
+        pots = {}
+        for v in self.vertices:
+            pots[v] = np.linalg.norm(self.vertices[v].get_center() - self.vertices[source].get_center())
+        return pots
+
+
+    def set_new_potentials(self, potentials):
+        for v, pot in potentials.items():
+            self.vertex_potentials[v].set_value(pot)
+
+    def anim_new_potentials(self, new_potentials):
+        anims = []
+        for v, pot in new_potentials.items():
+            anims.append(self.vertex_potentials[v].animate.set_value(pot))
+        return AnimationGroup(*anims)
+
     def add_directed_edge(self, u, v, offset = 0, weight = 1, offset_weight = 0):
         def compute_positions(u, v, offset):
-            vec = self.vertices[v].get_center() - self.vertices[u].get_center()
-            vec = vec / np.linalg.norm(vec)
+            #TODO vyhezkat
+            return (self.vertices[u].get_center() + offset, self.vertices[v].get_center() + offset)
+            
+        start_pos, end_pos = compute_positions(u, v, offset)
 
-            start_angle = np.arcsin(offset / (self.vertices[u].get_right() - self.vertices[u].get_center())[0])
-            start_vec = np.array([
-                vec[0] * np.cos(start_angle) + vec[1] * np.sin(start_angle),
-                vec[1] * np.cos(start_angle) - vec[0] * np.sin(start_angle),
-                0
-            ])
-            start_pos = self.vertices[u].get_center() + start_vec * (self.vertices[u].get_right() - self.vertices[u].get_center())[0]
-
-
-            end_angle = -np.arcsin(offset / (self.vertices[v].get_right() - self.vertices[v].get_center())[0])
-            end_vec = np.array([
-                -vec[0] * np.cos(end_angle) - vec[1] * np.sin(end_angle),
-                -vec[1] * np.cos(end_angle) + vec[0] * np.sin(end_angle),
-                0
-            ])
-            end_pos = self.vertices[v].get_center() + end_vec * (self.vertices[v].get_right() - self.vertices[v].get_center())[0]
-            return (start_pos, end_pos)
-
-        (start_pos, end_pos) = compute_positions(u, v, offset)
-        
         edge = Arrow(
             start = start_pos,
             end = end_pos,
             buff = 0,
-            color = GRAY
+            stroke_width=1,
+            tip_length = 0.13,
+            color = GRAY,
         )
 
         self.edges[(u,v)] = edge
@@ -150,10 +167,13 @@ class CustomGraph(Graph):
         for edge in self.edges:
             if not edge in self.edge_weights_vals:
                 self.edge_weights_vals[edge] = 1
+            # u, v = edge
+            # if (not self.directed) and not (v, u) in self.edge_weights_vals:
+            #     self.edge_weights_vals[(v,u)] = 1
 
         for vert in self.vertices:
             if not vert in self.vertex_potentials:
-                self.vertex_potentials[vert] = 0
+                self.vertex_potentials[vert] = ValueTracker(0)
 
         # run A*
         all_anims = []
@@ -163,56 +183,89 @@ class CustomGraph(Graph):
         q.put((0, start_node, -1))
         
         distances = {}
+        predecessors = {}
 
         mover_anims = []
         while not q.empty():
             (dist, node, predecessor) = q.get()
             if not node in distances:
                 distances[node] = dist
-                #print(node, dist)
+                predecessors[node] = predecessor
 
                 if predecessor != -1:
-                    all_anims.append(
-                        Succession(
-                            Wait(dist * speed),
-                            self.edges[(predecessor, node)].animate.set_color(RED)
-                        )
-                    )
+                    pass
+                    # all_anims.append(
+                    #     Succession(
+                    #         Wait(dist * speed),
+                    #         self.edges[(predecessor, node)].animate.set_color(RED)
+                    #     )
+                    # )
 
                 for neighbor in G[node]:
                     if not neighbor in distances:
                         edge = (node, neighbor)
-                        if self.directed == False:
-                            edge = (min(node, neighbor), max(node, neighbor))
-
+                        
                         new_dist = dist + self.edge_weights_vals[edge] + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value()
                         q.put((new_dist, neighbor, node))
 
                         mover = Circle(radius = 0.1, color = RED).move_to(self.vertices[node].get_center())
-                        mover_anims.append((mover, dist, self.vertices[neighbor].get_center(), dist + self.edge_weights_vals[edge] + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value()))
-        
-        print(distances[end_node])
+                        mover_anims.append(
+                            (
+                                self.vertices[node].get_center(), 
+                                self.vertices[neighbor].get_center(), 
+                                dist, 
+                                dist + self.edge_weights_vals[edge] + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value(),
+                                node,
+                                neighbor
+                            )
+                        )
+
+        shortest_path_nodes = [end_node]
+        shortest_path_edges = []
+
+        node = end_node
+        while node != start_node:
+            pred = predecessors[node]
+            shortest_path_nodes.append(pred)
+            shortest_path_edges.append((pred, node))
+            shortest_path_edges.append((node, pred))
+            node = pred
+
+        all_lines = []
         for anim in mover_anims:
-            (mover, start_time, new_pos, finish_time) = anim
-            print(start_time, finish_time)
+            (start_pos, end_pos, start_time, end_time, node, neighbor) = anim
             #finish_time = min(finish_time, distances[end_node])
             if start_time >= distances[end_node]:
                 continue
-            if finish_time >= distances[end_node]:
-                ratio = (distances[end_node] - start_time) *1.0 / (finish_time - start_time)
-                finish_time = start_time + ratio * (finish_time - start_time)
-                new_pos = ratio * new_pos + (1-ratio) * mover.get_center()
+            if end_time >= distances[end_node]:
+                ratio = (distances[end_node] - start_time) *1.0 / (end_time - start_time)
+                end_time = start_time + ratio * (end_time - start_time)
+                end_pos = ratio * end_pos + (1-ratio) * start_pos
 
+            line = Line(
+                    start = start_pos,
+                    end = end_pos,
+                    buff = 0,
+                    color = RED,
+                    z_index = 1000
+                )
             all_anims.append(
                 Succession(
                     Wait(start_time * speed),
                     AnimationGroup(
-                        mover.animate.move_to(new_pos),
-                        run_time = ( finish_time - start_time ) * speed,
+                        Create(line, rate_functions = "linear"), # TODO na zacatku je wait
+                        run_time = ( end_time - start_time ) * speed,
                     )
                 )
             )
+            print(node, neighbor, start_time, end_time)
+            all_lines.append(line)
 
-        return AnimationGroup(*all_anims)
+        return (
+            AnimationGroup(*all_anims),
+            all_lines,
+            shortest_path_nodes,
+            shortest_path_edges
+        )
         
 
