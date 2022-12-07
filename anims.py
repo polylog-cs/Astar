@@ -62,6 +62,29 @@ def changeWeights(scene, G, new_weights, color = RED):
     
     scene.wait()
 
+# TODO update edge colors
+def simple_reweighting(scene, G, edges_plus, edges_minus, change):
+    scene.play(
+        *[G.edge_weights_vals[e].animate.increment_value(change) for e in edges_plus],
+        *[G.edge_weights_vals[e].animate.increment_value(-change) for e in edges_minus],
+    )
+    scene.wait()
+
+def go_along_path(scene, G, path):
+    circ = Dot(radius = 0.05, color = RED, fill_opacity=1.0, fill_color = RED).move_to(G.edges[path[0]].get_start())
+    scene.play(FadeIn(circ))
+    
+    for i in range(len(path)):
+        self.play(
+            circ.animate.move_to(G.edges[path[i]].get_end())
+        )
+        if i != len(path)-1:
+            self.play(
+                circ.animate.move_to(G.edges[path[i+1]].get_start())
+            )
+    scene.play(FadeOut(circ))
+    scene.wait()
+
 class Intro(Scene):
     def construct(self):
         background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15)
@@ -291,12 +314,11 @@ class Chapter12(MovingCameraScene):
         self.add(
             *[e for e in G.edges.values()],
             *[v for v in G.vertices.values()],
-        )
-        self.play(
-            G.show_edge_lengths(G.edges.keys())
+            *[G.edge_weights_objs[e] for e in G.edges.keys()],
         )
         self.wait()
         self.next_section(skip_animations=False)
+
 
         # So in this first chapter, we will try to understand in which ways we can change our graph without changing which path is the shortest. In the end we also want a change such that Rome gets closer to Prague, but let’s postpone this problem to the next chapter. 
         # [animace kde měním hrany potenciálově, takže cesta zůstává stejná]
@@ -314,9 +336,89 @@ class Chapter12(MovingCameraScene):
 
         # So what can we do? Well, maybe we need to change more than one edge at a time. Look, let’s say I just take this edge and increase its length by one, but also, what if I offset this change by decreasing the length of all of these followup edges by one? Now, any path that uses the longer edge first gets longer by one, but immediately after that it gets shorter by one. So any one of these paths have the same length as before the change! [Ukáže se cesta červeně, změněná čísla možná tlustě]
 
-        # This still does not quite work though since there are still paths like this one that get shorter. So what we actually have to do is pick a node, and make all of the ingoing edges longer, and all of the outgoing edges shorter by the same amount. Then, any path going through that node gets first a bit longer and then shorter by the same amount, so it has in the end the same length. That’s nice! We managed to change our graph without messing up what is the shortest path from Prague to Rome! 
+        print(G.edges.keys())
+
+
+
+        # first just 7 6
+        simple_reweighting(self, G, [(7, 6)], [], -1)
+        simple_reweighting(self, G, [(7, 6)], [], 2)
+        simple_reweighting(self, G, [(7, 6)], [], -1)
+
+
+        # then 7,6, 0,7
+
+
+        edges_plus, edges_minus = [(7, 6)], [(0, 7)]
+        simple_reweighting(self, G, edges_plus, edges_minus, -1)
+        simple_reweighting(self, G, edges_plus, edges_minus, 2)
+        simple_reweighting(self, G, edges_plus, edges_minus, -2)
+        simple_reweighting(self, G, edges_plus, edges_minus, 1)
+
+        self.play(G.vertices[7].animate.scale(2.0))
+        self.play(G.vertices[7].animate.scale(1/2.0))
+        self.wait()
+        go_along_path(self, G, [(0, 7), (7, 6)])
+
+        # then all four
+        edges_plus, edges_minus = [(u,v) for (u,v) in G.edges.keys() if u == 7], [(u,v) for (u,v) in G.edges.keys() if v == 7]
+        simple_reweighting(self, G, edges_plus, edges_minus, -1)
+        simple_reweighting(self, G, edges_plus, edges_minus, 2)
+        simple_reweighting(self, G, edges_plus, edges_minus, -2)
+        #simple_reweighting(edges_plus, edges_minus, 1)
+        go_along_path(self, G, [(0, 7), (7, 0)])
+
+        # then another node
+        self.play(self.camera.frame.animate.move_to(G.vertices[6].get_center()))
+        self.play(G.vertices[7].animate.scale(2.0))
+        self.play(G.vertices[7].animate.scale(1/2.0))
+        self.wait()
+
+        edges_plus, edges_minus = [(u,v) for (u,v) in G.edges.keys() if u == 6], [(u,v) for (u,v) in G.edges.keys() if v == 6]
+        simple_reweighting(self, G, edges_plus, edges_minus, -1)
+        simple_reweighting(self, G, edges_plus, edges_minus, 2)
+        simple_reweighting(self, G, edges_plus, edges_minus, -2)
+        #simple_reweighting(self, G, edges_plus, edges_minus, 1)
+
+        go_along_path(self, G, [(16, 5), (5, 6), (6, 22), (22, 25)])
+
+
+
+
+        return
+        for i in range(N_CITIES):
+            self.add(Tex(i, color = BLACK).move_to(G.vertices[i].get_center()))
+
+class Chapter13(MovingCameraScene): # TODO need to join
+    def construct(self):
+        self.next_section(skip_animations=True)
+        background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
+        europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
+        self.add(background, europe_boundary, G)
+        self.add(
+            *[e for e in G.edges.values()],
+            *[v for v in G.vertices.values()],
+            *[G.edge_weights_objs[e] for e in G.edges.keys()],
+        )
+        self.wait()
+        self.next_section(skip_animations=False)
 
         # There are two special cases – Prague and Rome themselves. If we try our operation for Prague, it is now a bit different, since any shortest path from Prague only goes out of Prague but it never goes in, so here all of these paths got shorter by the same amount. But fortunately, even this is OK, because our task is not to keep all the lengths of all the paths the same. We simply want that the shortest path in the new graph is the same as the shortest path in the old graph. And if we shift the length of all of those paths  by the same amount, it does not change which one of them is the shortest. We can also do analogous reasoning for Rome.  
+        self.play(self.camera.frame.animate.scale(0.3).move_to(G.vertices[PRAGUE].get_center()))
+        self.play(G.vertices[PRAGUE].animate.scale(2.0))
+        self.play(G.vertices[PRAGUE].animate.scale(1/2.0))
+        self.wait()
+
+        edges_plus, edges_minus = [(u,v) for (u,v) in G.edges.keys() if u == PRAGUE], [(u,v) for (u,v) in G.edges.keys() if v == PRAGUE]
+        
+        simple_reweighting(self, G, edges_plus, edges_minus, -1)
+        simple_reweighting(self, G, edges_plus, edges_minus, 2)
+        simple_reweighting(self, G, edges_plus, edges_minus, -3)
+ 
+        go_along_path(self, G, [(0, 15), (15, 6)])
+        go_along_path(self, G, [(0, 11), (11, 31)])
+
+
 
         # So, we can repeatedly apply our trick to all the nodes, including Prague and Rome and we know that we are not changing what the shortest path is. I find this really magical, because after a few applications of this trick, the graph that we get looks very different from the graph we started with! Yet, finding the shortest path in the new graph gives the same result as in the old graph. 
         # And it is even more mind boggling that there is nothing special about Prague and Rome! Even if we wanted to find the shortest path from Paris to Lviv, it would still be the same path in the old and the new graph!
@@ -339,11 +441,6 @@ class Chapter12(MovingCameraScene):
 
 
         self.wait(5)
-
-        return
-        for i in range(N_CITIES):
-            self.add(Tex(i, color = BLACK).move_to(G.vertices[i].get_center()))
-
 
 class Chapter2(Scene):
     def construct(self):

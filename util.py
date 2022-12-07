@@ -474,7 +474,7 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([1, 335.569, 296.47]),
         np.array([1, 288.359, 338.581]),
         np.array([1, 270.594, 359.471]),
-        np.array([1, 298.229, 390.725]) + np.array([0, 3, -5]),
+        np.array([1, 298.229, 390.725]) + np.array([0, 3, -7]),
         np.array([2, 278.983, 398.292]) + np.array([0, -5, 0]),
         np.array([1, 250.361, 427.572]),
 
@@ -898,6 +898,8 @@ def clipart_map_europe(scale = 1, undirected = True):
         else:
             alpha = 1.8
             weight = alpha * np.linalg.norm(G.vertices[u].get_center()-G.vertices[v].get_center())
+            if u == 7 and v == 6:
+                weight = 2.0
             
             offset = np.array([-(G.vertices[v].get_center()-G.vertices[u].get_center())[1], (G.vertices[v].get_center()-G.vertices[u].get_center())[0], 0])
             offset /= np.linalg.norm(offset)
