@@ -24,6 +24,44 @@ scroll_properties_str = [
     ],
 ]
 
+def basicDijkstraRun(scene, G, variant = None):
+    anims, lines, path_nodes, path_edges = G.run_dijkstra(PRAGUE, ROME, 3)
+    scene.play(
+        anims
+    )
+    scene.wait()
+
+    scene.play(
+        *[FadeOut(line) for line in lines],
+        *[G.vertices[v].animate.set_color(RED) for v in path_nodes],
+        *[G.edges[e].animate.set_color(RED) for e in path_edges[0:len(path_edges) // 2]],
+    )
+    scene.wait()        
+
+    scene.play(
+        *[G.vertices[v].animate.set_color(GRAY) for v in path_nodes],
+        *[G.edges[e].animate.set_color(GRAY) for e in path_edges[0:len(path_edges) // 2]],
+    )
+    scene.wait()
+
+def changeWeights(scene, G, new_weights, color = RED):
+    scene.play(
+        *[G.edges[e].animate.set_color(color) for e in new_weights.keys()],
+        *[G.edge_weights_objs[e].animate.set_color(color) for e in new_weights.keys()],
+        run_time = 0.3
+    )
+    scene.play(
+        *[G.edge_weights_vals[(u,v)].animate.set_value(val) for ((u,v), val) in new_weights.items()]
+    )
+    scene.wait()
+    scene.play(
+        *[G.edges[e].animate.set_color(GRAY) for e in new_weights.keys()],
+        *[G.edge_weights_objs[e].animate.set_color(GRAY) for e in new_weights.keys()],
+        run_time = 0.3
+    )
+    
+    scene.wait()
+
 class Intro(Scene):
     def construct(self):
         background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15)
@@ -146,8 +184,9 @@ class Polylog(Scene):
         )
         self.wait()
 
-class Chapter1(Scene):
+class Chapter11(Scene):
     def construct(self):
+        self.next_section(skip_animations=False)
 
         # The problem we are trying to solve is how to speed up Dijkstra’s algorithm by somehow giving it whatever additional information we know about our graph. For example, in the specific case of our map, we have the additional information of knowing the geographical position of every city. The hard part is how to incorporate this information.
         background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
@@ -191,34 +230,87 @@ class Chapter1(Scene):
         self.wait()
 
         # Well, imagine that I somehow make the edges going in the direction of Rome shorter [stupně green, čísla jdou dolů], and the edges going away from Rome longer. 
-        print(G.gen_air_potentials(ROME))
-        return
-        self.play(
-            G.anim_new_potentials(G.gen_air_potentials(ROME))
-        )
-        self.wait()
-        return
+
+        # we need to do it in two parts
+        air_potentials = G.gen_air_potentials(ROME)
+
+        def f(u,v):
+            ret = random.uniform(0.7, 1.0)
+            # 0 16 17 5 1
+            if (u,v) == (0,16) or (u,v) == (16, 17) or (u,v) == (17,5):
+                ret = random.uniform(0.3, 0.5)
+            return ret
+
+        shorter_air = {}
+        longer_air = {}
+        zero = {}
+        shorter_weird = {}
+        longer_weird = {}
+
+        for (u,v) in G.edges:
+            zero[(u,v)] = G.edge_weights_vals[(u,v)].get_value()
+            if air_potentials[u] < air_potentials[v]:
+                longer_air[(u,v)] = G.edge_weights_vals[(u,v)].get_value() + air_potentials[v] - air_potentials[u]    
+                longer_weird[(u,v)] = random.uniform(1.0, 1.4) * (G.edge_weights_vals[(u,v)].get_value() + air_potentials[v] - air_potentials[u] )
+            else:
+                shorter_air[(u,v)] = G.edge_weights_vals[(u,v)].get_value() + air_potentials[v] - air_potentials[u]
+                shorter_weird[(u,v)] = f(u,v) * (G.edge_weights_vals[(u,v)].get_value() + air_potentials[v] - air_potentials[u] )
+
+        changeWeights(self, G, shorter_air, color = GREEN)
+        changeWeights(self, G, longer_air)
+
 
         # Then, I just run the good old Dijkstra’s algorithm on the new graph.  
         # Since the edges going in the right direction are shorter, the distance from Prague to Rome gets smaller, and the algorithm explores fewer nodes before it reaches Rome, exactly as we want.
-        anims, lines, _, _ = G.run_dijkstra(PRAGUE, ROME, 3)
-        self.play(
-            anims
-        )
+
+        basicDijkstraRun(self, G)
         
 
         # But now the big question becomes: how should we change the edge lengths? There is an obvious problem with it: We need to guarantee that the shortest path we find in the changed graph is also the shortest path in the original graph. [*For simplicity let’s assume that the shortest path is unique] 
         # If we simply start making some edges shorter and some edges longer, the shortest path in the new graph could end up being different from the old one, which we actually wanted to find. 
         # [ změníme délky hran, pak vyznačíme jinou nejkratší cestu a k tomu popisek “new shortest path”]
+        self.next_section(skip_animations=False)
+
+
+        # first revert weights
+        #changeWeights(self, G, zero, color = GRAY)
+
+        # then do weird reweighting
+        changeWeights(self, G, shorter_weird | longer_weird, color = GRAY)
+
+
+        basicDijkstraRun(self, G)
+
+
+class Chapter12(MovingCameraScene):
+    def construct(self):
+        self.next_section(skip_animations=True)
+        background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
+        europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
+        self.add(background, europe_boundary, G)
+        self.add(
+            *[e for e in G.edges.values()],
+            *[v for v in G.vertices.values()],
+        )
+        self.play(
+            G.show_edge_lengths(G.edges.keys())
+        )
+        self.wait()
+        self.next_section(skip_animations=False)
 
         # So in this first chapter, we will try to understand in which ways we can change our graph without changing which path is the shortest. In the end we also want a change such that Rome gets closer to Prague, but let’s postpone this problem to the next chapter. 
         # [animace kde měním hrany potenciálově, takže cesta zůstává stejná]
+
 
 
         # [přiblížit graf ať není vidět praha ani řím a evokuje to, že nevíme kudy vede nejkratší cesta
         # vyznačená cesta z prahy do říma, pak se změní na několik jiných cest at je jasné že nevíme která to je]
 
         # Since at this point in time we don’t know yet what the shortest path is, there is not that much that we can do. We can pick some edge and make it shorter or longer, but this way, I am also changing the length of all the paths that use that edge and this can totally mess up which path is the shortest. [Vyznačená hrana jde vahou nahoru a ukazují se různé cesty co přes ní vedou]
+
+        self.play(self.camera.frame.animate.scale(0.3).move_to(G.vertices[7].get_center()))
+
+
 
         # So what can we do? Well, maybe we need to change more than one edge at a time. Look, let’s say I just take this edge and increase its length by one, but also, what if I offset this change by decreasing the length of all of these followup edges by one? Now, any path that uses the longer edge first gets longer by one, but immediately after that it gets shorter by one. So any one of these paths have the same length as before the change! [Ukáže se cesta červeně, změněná čísla možná tlustě]
 
@@ -229,34 +321,29 @@ class Chapter1(Scene):
         # So, we can repeatedly apply our trick to all the nodes, including Prague and Rome and we know that we are not changing what the shortest path is. I find this really magical, because after a few applications of this trick, the graph that we get looks very different from the graph we started with! Yet, finding the shortest path in the new graph gives the same result as in the old graph. 
         # And it is even more mind boggling that there is nothing special about Prague and Rome! Even if we wanted to find the shortest path from Paris to Lviv, it would still be the same path in the old and the new graph!
 
-        # But now comes the best part. There is actually a very beautiful way of thinking about these operations. Do you still remember how we increased these lengths by one and decreased these lengths by the same amount? Here is how I think of it. 
+        # But now comes the best part. There is actually a very beautiful way of thinking about these operations. Do you still remember how we increased these lengths by one and decreased these lengths by the same amount? Here is how we can think of it. 
 
         # [v animaci se nejdřív zkosí graf tak, aby se tam přidala třetí dimenze, pak se jeden node zvedne, délky hran se zvětšují a zmenšují, zvětšující jsou červeně, zmenšující zeleně]
 
-        # Nice, right? What I did is that I added a third dimension to the picture and raised the node to the elevation of one. I now define the new graph by saying that every edge gets longer by the amount you need to climb, or it gets shorter by the amount you descend. 
+        # Nice, right? What I did is that I added a third dimension to the picture and raised this node to the elevation of one. Every edge then simply gets longer by the amount you need to climb, or shorter by the amount you descend. 
 
-        # Now we can easily visualize all the operations that we can do to the graph. All we do is that we give every node some elevation and then we redefine the lengths of all edges by the following formula. The new length of the edge is equal to the old length + the elevation of the node we go to - the elevation of the node where we start. 
-        # [někde vedle se ukáže jen jedna hrana a jak je to pro ni]
+        # In general, the three operations that we did to our graph are equivalent to raising these two nodes to elevation one and Prague to elevation two. And then we just redefine the lengths of all edges by the following formula. The new length of every edge is equal to its old length + the elevation of the node it goes to - the elevation of the node where it starts. 
+        # [někde vedle se ukáže jen jedna hrana a jak je to pro ni] This is really just a different way of looking at the same trick. 
 
-        # Now we can understand very visually what’s happening. For example, the general formula for the new distance from Prague to Rome is that it’s equal to the old distance plus the elevation of Rome minus the elevation of Prague. It does not depend on other elevations at all. That is because what we have already seen, if we change the elevation of some node except for Prague and Rome, the path first gets longer and then shorter by the same amount. Another way to see it is that this is a telescoping sum.
+        # But now we can understand very visually what’s happening. For example, the new length of this path after we do the reweighting is always equal to the old length of that path plus the potential of Rome minus the potential of Prague. You can certainly prove that this is the case by writing down the definitions of new edge weights and observing that it is a telescoping sum, but I hope that this feels very intuitive even without any calculation. 
 
-        # But I like to look at it more from a physics perspective. These elevations are really behaving like potential energy. If you bike from Prague to Rome, it does not matter which path you take, the total amount of altitude that you gain or lose on that trip is always the same, and it is simply the difference between these two elevations. And this difference is exactly the amount by which the path gets shorter or longer. 
+        # But what this formula is really saying is that we change each edge length by the amount we need to go up or down so I think it is pretty clear that if we walk from Prague to Rome, the path is shorter by how much Prague is higher than Rome. And it doesn't even matter which path we take. All of them clearly get shorter by the same height difference, in this case all of these paths are shorter by 2, so also the distance from Prague to Rome simply decreases by 2. 
 
-        # The connection with potentials in physics is also why these elevations are often also called potentials. I will now use this name and I will also use the name potential reweighting for this trick that we can do with them. If you know the physics potentials, you might enjoy thinking about how the analogy works. 
+        # This physical intuition of climbing is exactly why these elevations are usually called potentials. In fact, if you are a physicist, the observations we made are just variations on the equations you know and love. So I will use the name potential from now on and I will also use the name potential reweighting for this trick that we can do with them.  
 
-        # [
-        # tohle možná dropnout, je to moc advanced
-        # Levo Physics pravo CS
-        # potentials \phi: V->R, potential \phi R^3->R
-        # define length(e) =  phi(v) - phi(u), Esipka = grad phi
-        # then, any cycle has length 0, For above E, Rot E = 0 / circ int E . dl = 0
-        #  For any path P from u to v: length(P)= phi(v) - phi(u) vs krivkovy integral E od u do v = phi(v) - phi(u)
-        # ]
 
 
         self.wait(5)
 
-    
+        return
+        for i in range(N_CITIES):
+            self.add(Tex(i, color = BLACK).move_to(G.vertices[i].get_center()))
+
 
 class Chapter2(Scene):
     def construct(self):

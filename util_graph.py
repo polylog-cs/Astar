@@ -6,12 +6,15 @@ from manim import *
 from util import *
 from queue import PriorityQueue
 
+# TODO uzsi sipky
+# https://docs.manim.community/en/stable/reference/manim.mobject.geometry.tips.ArrowTip.html
+
 class CustomGraph(Graph):
 
-    edge_weights_vals = {} # edge -> float
+    edge_weights_vals = {} # edge -> ValueTracker
     edge_weights_objs = {} # edge -> Decimal
     vertex_names = {} # vertex -> Tex
-    vertex_potentials = {}
+    vertex_potentials = {} # vertex -> ValueTracker
     directed = True
 
     def make_directed(self, directed):
@@ -56,9 +59,9 @@ class CustomGraph(Graph):
             weight, 
             num_decimal_places=1,
             color = GRAY
-        ).scale(0.5)
+        ).scale(0.3)
         self.edge_weights_objs[edge] = number
-        self.edge_weights_vals[edge] = weight
+        self.edge_weights_vals[edge] = ValueTracker(weight)
         number.move_to(self.edges[edge].get_center()).shift(offset)
         number.add_updater(
             lambda mob: mob.move_to(self.edges[edge].get_center()).shift(offset)
@@ -105,7 +108,7 @@ class CustomGraph(Graph):
         for edge in self.edges:
             self.edge_weights_objs[edge].add_updater(
                 lambda mob, edge = edge: mob.set_value(
-                    self.edge_weights_vals[edge] 
+                    self.edge_weights_vals[edge].get_value()
                     + self.vertex_potentials[edge[1]].get_value()
                     - self.vertex_potentials[edge[0]].get_value()
                 )
@@ -136,8 +139,17 @@ class CustomGraph(Graph):
 
     def add_directed_edge(self, u, v, offset = 0, weight = 1, offset_weight = 0):
         def compute_positions(u, v, offset):
-            #TODO vyhezkat
-            return (self.vertices[u].get_center() + offset, self.vertices[v].get_center() + offset)
+            dir = (self.vertices[v].get_center() - self.vertices[u].get_center() ) / np.linalg.norm(self.vertices[v].get_center() - self.vertices[u].get_center())
+            start = self.vertices[u].get_center() + offset
+            end = self.vertices[v].get_center() + offset
+            u_radius = self.vertices[u].width/2.0
+            v_radius = self.vertices[v].width/2.0
+            if np.linalg.norm(offset) < u_radius:
+                start += dir * np.sqrt(u_radius ** 2 - np.linalg.norm(offset) ** 2)
+            if np.linalg.norm(offset) < v_radius:
+                end -= dir * np.sqrt(v_radius ** 2 - np.linalg.norm(offset) ** 2)
+                
+            return (start, end)
             
         start_pos, end_pos = compute_positions(u, v, offset)
 
@@ -166,10 +178,8 @@ class CustomGraph(Graph):
         # initialize potentials and weights to default values to be sure
         for edge in self.edges:
             if not edge in self.edge_weights_vals:
-                self.edge_weights_vals[edge] = 1
-            # u, v = edge
-            # if (not self.directed) and not (v, u) in self.edge_weights_vals:
-            #     self.edge_weights_vals[(v,u)] = 1
+                self.edge_weights_vals[edge] = ValueTracker(1)
+
 
         for vert in self.vertices:
             if not vert in self.vertex_potentials:
@@ -205,7 +215,7 @@ class CustomGraph(Graph):
                     if not neighbor in distances:
                         edge = (node, neighbor)
                         
-                        new_dist = dist + self.edge_weights_vals[edge] + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value()
+                        new_dist = dist + self.edge_weights_vals[edge].get_value() + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value()
                         q.put((new_dist, neighbor, node))
 
                         mover = Circle(radius = 0.1, color = RED).move_to(self.vertices[node].get_center())
@@ -214,21 +224,21 @@ class CustomGraph(Graph):
                                 self.vertices[node].get_center(), 
                                 self.vertices[neighbor].get_center(), 
                                 dist, 
-                                dist + self.edge_weights_vals[edge] + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value(),
+                                dist + self.edge_weights_vals[edge].get_value() + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value(),
                                 node,
                                 neighbor
                             )
                         )
 
         shortest_path_nodes = [end_node]
-        shortest_path_edges = []
+        shortest_path_edges = [[], []]
 
         node = end_node
         while node != start_node:
             pred = predecessors[node]
             shortest_path_nodes.append(pred)
-            shortest_path_edges.append((pred, node))
-            shortest_path_edges.append((node, pred))
+            shortest_path_edges[0].append((pred, node))
+            shortest_path_edges[1].append((node, pred))
             node = pred
 
         all_lines = []
@@ -265,7 +275,7 @@ class CustomGraph(Graph):
             AnimationGroup(*all_anims),
             all_lines,
             shortest_path_nodes,
-            shortest_path_edges
+            shortest_path_edges[0] + shortest_path_edges[1]
         )
         
 

@@ -41,9 +41,122 @@ def random_rubik_file():
 
 PRAGUE = 0
 ROME = 1
-N_CITIES = 36
-SCALE_EUROPE = 1.2
+N_CITIES = 35
+SCALE_EUROPE = 1.25
 
+def clipart_arrow():
+    return ImageMobject("img/arrow.png", z_index = 10000).scale_to_fit_height(0.7)
+
+def clipart_house(color = RED, height = 1, z_index = 100):
+    pnts = [
+        np.array([232.535, 333.808, 0.0]),
+        np.array([277.698, 333.811, 0.0]),
+        np.array([277.387, 373.503, 0.0]),
+        np.array([318.11, 373.566, 0.0]),
+        np.array([318.057, 333.881, 0.0]),
+        np.array([363.215, 333.935, 0.0]),
+        np.array([362.703, 419.758, 0.0]),
+        np.array([368.717, 425.367, 0.0]),
+        np.array([379.969, 415.454, 0.0]),
+        np.array([390.258, 426.885, 0.0]),
+        np.array([297.362, 509.816, 0.0]),
+        np.array([256.582, 472.796, 0.0]),
+        np.array([256.626, 497.065, 0.0]),
+        np.array([232.588, 497.017, 0.0]),
+        np.array([232.899, 451.371, 0.0]),
+        np.array([204.978, 426.922, 0.0]),
+        np.array([215.11, 415.777, 0.0]),
+        np.array([225.569, 425.578, 0.0]),
+        np.array([232.235, 419.834, 0.0]),
+        np.array([232.549, 333.833, 0.0]),
+    ]
+
+    house = Polygon(
+        *pnts,
+        color = color,
+        fill_color = color,
+		fill_opacity = 1,
+        z_index = z_index
+    ).move_to(
+        0*DOWN
+    ).scale_to_fit_height(
+        height
+    )
+
+    return house   
+
+def clipart_icon(color = BLUE, height = 1, z_index = 100):
+    pnts = [
+        np.array([407.837, 313.233, 0.0]),
+        np.array([340.843, 431.234, 0.0]),
+        np.array([297.995, 558.503, 0.0]),
+        np.array([253.986, 431.689, 0.0]),
+        np.array([187.414, 311.624, 0.0]),
+    ]
+
+    icon = ArcPolygon(
+        *pnts,
+        color = color,
+        arc_config = [
+            { 'radius': 119.256, 'color': color},
+            { 'radius': 70.9444, 'color': color},
+            { 'radius': 70.9444, 'color': color},
+            { 'radius': 119.256, 'color': color},
+            { 'radius': 216.488, 'color': color},
+
+        ],
+        fill_color = color,
+		fill_opacity = 1,
+        z_index = z_index
+    ).move_to(
+        0*DOWN
+    ).scale_to_fit_height(
+        height
+    )
+
+    return icon
+
+def clipart_bubble(pos, scale = 1.0, color = text_color, length_scale = 1):
+    scale = scale / 200.0
+    pos = np.array(pos) - np.array([489.071, 195.644, 0.0])*scale
+    ret_objects = []
+
+    c1 = Circle(
+        radius = 28.5689 * scale,
+        color = color
+    ).move_to(np.array([489.071, 195.644, 0.0])*scale).shift(pos + 0.3*UP)
+    print(c1.get_center())
+
+    c2 = Circle(
+        radius = 39.7392 * scale,
+        color = color
+    ).move_to(np.array([409.987, 274.728, 0.0])*scale).shift(pos + 0.15*UP)
+    ret_objects += [c1, c2]
+
+    pnts = [
+        (373.367*RIGHT +  366.776 * UP) * scale + pos,
+        (503.717*RIGHT +  453.873 * UP) * scale + pos,
+        (464.612*RIGHT +  613.847 * UP) * scale + pos,
+        (340.78*RIGHT +  643.472 * UP) * scale + pos,
+        (131.628*RIGHT +  596.072 * UP) * scale + pos,
+        (174.288*RIGHT +  388.106 * UP) * scale + pos,
+    ]
+
+    center = 0*LEFT
+    for i in range(len(pnts)):
+        pnts[i] += (length_scale - 1)*(pnts[i] - pnts[0])[0]*RIGHT
+        center += pnts[i]
+    center /= len(pnts)
+
+    angles = np.array([120, 170, 120, 120, 180, 120])*1.5707963267/90.0
+
+
+    for i in range(len(pnts)):
+        ret_objects.append(
+            ArcBetweenPoints(pnts[i], pnts[(i+1)%len(pnts)], angle = angles[i], color = color)
+        )
+
+    return ret_objects, center
 
 def clipart_yes_no_maybe(which, height):
     pnts_yes = [
@@ -222,7 +335,6 @@ def clipart_yes_no_maybe(which, height):
         return Group(circle, clipart, small_circle)
 
 def clipart_map_europe(scale = 1, undirected = True):
-
     pnts_europe = [
         np.array([404.246, 552.657, 0]),
         np.array([404.373, 545.566, 0]),
@@ -355,24 +467,24 @@ def clipart_map_europe(scale = 1, undirected = True):
     ]
 
     pnts_cities = [
-        np.array([1, 307.112, 427.572]),
+        np.array([1, 307.112, 427.572]) + np.array([0, 0, 0]),
         np.array([2, 287.537, 312.262]),
         np.array([1, 304.973, 297.951]),
         np.array([1, 323.561, 281.172]),
         np.array([1, 335.569, 296.47]),
         np.array([1, 288.359, 338.581]),
         np.array([1, 270.594, 359.471]),
-        np.array([1, 298.229, 390.725]),
-        np.array([2, 278.983, 398.292]),
+        np.array([1, 298.229, 390.725]) + np.array([0, 3, -5]),
+        np.array([2, 278.983, 398.292]) + np.array([0, -5, 0]),
         np.array([1, 250.361, 427.572]),
 
         np.array([2, 188.183, 408.82]),
-        np.array([2, 297.571, 464.583]),
-        np.array([1, 333.266, 442.705]),
+        np.array([2, 297.571, 464.583]) + np.array([0, 0, 7]),
+        #np.array([1, 333.266, 442.705]),
         np.array([2, 371.429, 460.8]),
         np.array([1, 401.366, 423.459]),
         np.array([2, 464.697, 433.0]),
-        np.array([2, 326.193, 399.279]),
+        np.array([2, 326.193, 399.279]) + np.array([0, 10, -5]),
         np.array([1, 323.067, 365.064]),
         np.array([1, 346.261, 337.265]),
         np.array([2, 422.257, 345.818]),
@@ -395,9 +507,15 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([1, 261.301, 524.645]),
         np.array([1, 250.361, 427.572]),
     ]
-
     
     pnts_paths = [
+    [
+        np.array([368.422, 460.77, 0]),
+        np.array([354.492, 459.97, 0]),
+        np.array([339.122, 450.684, 0]),
+        np.array([320.39, 441.558, 0]),
+        np.array([308.382, 428.589, 0]),
+    ],
     [
         np.array([322.82, 282.496, 0]),
         np.array([321.399, 286.139, 0]),
@@ -471,18 +589,6 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([381.627, 444.403, 0]),
         np.array([371.101, 450.835, 0]),
         np.array([371.048, 457.947, 0]),
-    ],
-    [
-        np.array([335.77, 443.581, 0]),
-        np.array([346.345, 445.67, 0]),
-        np.array([355.507, 453.564, 0]),
-        np.array([368.875, 459.474, 0]),
-    ],
-    [
-        np.array([330.861, 441.586, 0]),
-        np.array([319.056, 438.847, 0]),
-        np.array([313.89, 432.122, 0]),
-        np.array([308.215, 428.307, 0]),
     ],
     [
         np.array([322.873, 366.915, 0]),
@@ -770,7 +876,7 @@ def clipart_map_europe(scale = 1, undirected = True):
         for i in range(len(pnts_cities)):
             if np.linalg.norm(G.vertices[i].get_center() - path[-1]) < np.linalg.norm(G.vertices[v].get_center() - path[-1]):
                 v = i
-        
+
         if undirected:
             alpha = 1.2
             def add_edge(u, v):
@@ -790,7 +896,7 @@ def clipart_map_europe(scale = 1, undirected = True):
 
             add_edge(u, v)
         else:
-            alpha = 1.4
+            alpha = 1.8
             weight = alpha * np.linalg.norm(G.vertices[u].get_center()-G.vertices[v].get_center())
             
             offset = np.array([-(G.vertices[v].get_center()-G.vertices[u].get_center())[1], (G.vertices[v].get_center()-G.vertices[u].get_center())[0], 0])
