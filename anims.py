@@ -75,12 +75,13 @@ def go_along_path(scene, G, path):
     scene.play(FadeIn(circ))
     
     for i in range(len(path)):
-        self.play(
+        scene.play(
             circ.animate.move_to(G.edges[path[i]].get_end())
         )
         if i != len(path)-1:
-            self.play(
-                circ.animate.move_to(G.edges[path[i+1]].get_start())
+            scene.play(
+                circ.animate.move_to(G.edges[path[i+1]].get_start()),
+                run_time = 0.2
             )
     scene.play(FadeOut(circ))
     scene.wait()
@@ -389,7 +390,7 @@ class Chapter12(MovingCameraScene):
         for i in range(N_CITIES):
             self.add(Tex(i, color = BLACK).move_to(G.vertices[i].get_center()))
 
-class Chapter13(MovingCameraScene): # TODO need to join
+class Chapter13(MovingCameraScene): # TODO are the scenes joined properly?
     def construct(self):
         self.next_section(skip_animations=True)
         background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
@@ -401,6 +402,8 @@ class Chapter13(MovingCameraScene): # TODO need to join
             *[G.edge_weights_objs[e] for e in G.edges.keys()],
         )
         self.wait()
+        simple_reweighting(self, G, edges_plus, edges_minus, -1)
+        simple_reweighting(self, G, edges_plus, edges_minus, -1)
         self.next_section(skip_animations=False)
 
         # There are two special cases – Prague and Rome themselves. If we try our operation for Prague, it is now a bit different, since any shortest path from Prague only goes out of Prague but it never goes in, so here all of these paths got shorter by the same amount. But fortunately, even this is OK, because our task is not to keep all the lengths of all the paths the same. We simply want that the shortest path in the new graph is the same as the shortest path in the old graph. And if we shift the length of all of those paths  by the same amount, it does not change which one of them is the shortest. We can also do analogous reasoning for Rome.  
@@ -415,13 +418,19 @@ class Chapter13(MovingCameraScene): # TODO need to join
         simple_reweighting(self, G, edges_plus, edges_minus, 2)
         simple_reweighting(self, G, edges_plus, edges_minus, -3)
  
-        go_along_path(self, G, [(0, 15), (15, 6)])
-        go_along_path(self, G, [(0, 11), (11, 31)])
-
+        go_along_path(self, G, [(0, 15), (15, 16)])
+        go_along_path(self, G, [(0, 11), (11, 31), (31, 9), (9, 8), (8, 6)])
 
 
         # So, we can repeatedly apply our trick to all the nodes, including Prague and Rome and we know that we are not changing what the shortest path is. I find this really magical, because after a few applications of this trick, the graph that we get looks very different from the graph we started with! Yet, finding the shortest path in the new graph gives the same result as in the old graph. 
         # And it is even more mind boggling that there is nothing special about Prague and Rome! Even if we wanted to find the shortest path from Paris to Lviv, it would still be the same path in the old and the new graph!
+
+
+
+
+
+
+
 
         # But now comes the best part. There is actually a very beautiful way of thinking about these operations. Do you still remember how we increased these lengths by one and decreased these lengths by the same amount? Here is how we can think of it. 
 
