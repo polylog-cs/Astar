@@ -3,7 +3,7 @@ import itertools
 import random
 import math
 from manim import *
-from util import *
+from utils.util import *
 from queue import PriorityQueue
 import matplotlib.colors as mcolors
 

@@ -2,19 +2,18 @@ import copy
 import itertools
 import random
 import math
-from util_graph import *
+from utils.util_graph import *
 from manim import *
 from typing import Set
-from solarized import *
-
+from utils.solarized import *
+from manim.utils.unit import Percent
 
 ############### DEFAULT OPTIONS
 
 def default():
-    Tex.set_default(color = GRAY)
-    Integer.set_default(color = GRAY)
-    Tex.set_default(font_size = 60)
-
+    VMobject.set_default(color = GRAY)
+    Polygon.set_default(color = RED)
+    SurroundingRectangle.set_default(color = RED)
 ############### GENERATING SOUNDS
 
 def random_click_file():
@@ -825,7 +824,7 @@ def clipart_map_europe(scale = 1, undirected = True):
         return pnt/50.0 * scale
 
     #### boundary
-
+    background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
     europe_boundary = Polygon(
         *[normalize(pnt) for pnt in pnts_europe],
         color = BLUE,
@@ -932,47 +931,51 @@ def clipart_map_europe(scale = 1, undirected = True):
     # for v in G.vertices:
     #     potentials[v] = np.linalg.norm(G.vertices[v].get_center() - G.vertices[rome].get_center())
     G.setup_potentials(rate = 0.5)
-    return (europe_boundary, G)
+    return (background, europe_boundary, G)
 
 
-scroll_properties_str = [
+list_properties_str = [
     [
         r"1. Distance from Prague to Rome\\ gets as small as possible. ",
         "1. Potential of Prague as high as possible. ",
         "1. Potential of Prague as close to dist(Prague, Rome) as possible. ",
-        "1. Potential(source) is close to dist(source, target). ",
+        r"{{1. Potential(source) is close to \\ }}{{dist(source, target). }}",
     ],
     [
         "2. All edge retain nonnegative lengths. ",
-        r"2. For every edge $(u,v):$ \\potential$(u)$ $\le $ potential$(v)$ + length$(u,v)$ "
+        r"{{2. For every edge $(u,v):$ \\}}{{potential$(u)$ $\le $ potential$(v)$ + length$(u,v)$ }}"
     ],
     [
-        r"\;\;\; Intuition: For every node $u$ \\potential$(u)$ $\le $ dist($u$, solution)"
+        r"{{\;\;\; Intuition: For every node $u$ \\}}{{potential$(u)$ $\le $ dist($u$, target)}}"
     ],
     [
         "3. We can compute it fast.  "
     ],
 ]
 
-def create_scroll(options):
-    scroll = ImageMobject("img/scroll.png").scale_to_fit_height(4).rotate(90/360.0*2*PI)
-    scroll_header_scale = 0.8
-    scroll_properties_scale = 0.5
-    scroll_header = Tex("Good potential satisfies: ").scale(scroll_header_scale).move_to(
-        scroll.get_center()
-    ).align_to(scroll, UP).shift(0.3*DOWN)
+def create_potential_list(options):
+    list_header_scale = 0.8
+    list_properties_scale = 0.5
+    list_header = Tex("Good potential satisfies: ").scale(list_header_scale)
 
-    scroll_properties = []
+    list_properties = []
     for i in range(4):
-        scroll_properties.append(
-            Tex(scroll_properties_str[i][options[i]]).scale(scroll_properties_scale)
-        )
+        txt = Tex(list_properties_str[i][options[i]]).scale(list_properties_scale)
+        list_properties.append(txt)
+        if i == 0 and options[i] == -1:
+            txt[1].shift(0.5 * RIGHT)
+        if i == 1 and options[i] == -1:
+            txt[1].shift(1 * RIGHT)
+        if i == 2 and options[i] == -1:
+            txt[1].shift(1 * RIGHT)
 
-    Group(*scroll_properties).arrange_in_grid(cols = 1, col_alignments="l").next_to(
-        scroll_header, DOWN
-    ).align_to(scroll_header, LEFT)
+    Group(*list_properties).arrange_in_grid(cols = 1, col_alignments="l").next_to(
+        list_header, DOWN
+    ).align_to(list_header, LEFT)
 
-    return Group(scroll, scroll_header, *scroll_properties)
+    border = SurroundingRectangle(Group(list_header, *list_properties), corner_radius = 0.3, fill_opacity = 1, fill_color = config.background_color)
+
+    return Group(border, list_header, *list_properties)
 
 def create_strategy(old=True, scale = 1):
 
@@ -991,7 +994,7 @@ def create_strategy(old=True, scale = 1):
             Tex("3. Run Dijkstra on the new graph. ").scale(scale_small * scale)
         ]).arrange_in_grid(cols = 1, cell_alignment = LEFT)
 
-    scroll = ImageMobject("img/scroll.png").scale_to_fit_height(3.5).scale(scale)
+    scroll = ImageMobject("img/scroll_transparent.png").scale_to_fit_height(4.5).scale(scale)
     strategy.move_to(scroll.get_center())
 
     return Group(scroll, strategy)

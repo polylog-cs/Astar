@@ -3,17 +3,16 @@ from re import I
 from unittest import skip
 from manim import config as global_config
 
-from solarized import * # TODO nenacita se solarized
-from util import *
-from util_graph import *
+from utils.solarized import * # TODO nenacita se solarized
+from utils.util import *
+from utils.util_graph import *
 
 
 
 class Intro(Scene):
     def construct(self):
         default()
-        background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15)
-        europe_boundary, G = clipart_map_europe(SCALE_EUROPE)
+        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE)
         self.play(
             FadeIn(background), 
             FadeIn(europe_boundary), 
@@ -139,9 +138,7 @@ class Chapter11(Scene):
         self.next_section(skip_animations=False)
         default()
         # The problem we are trying to solve is how to speed up Dijkstra’s algorithm by somehow giving it whatever additional information we know about our graph. For example, in the specific case of our map, we have the additional information of knowing the geographical position of every city. The hard part is how to incorporate this information.
-        background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
-        
-        europe_boundary, G = clipart_map_europe(SCALE_EUROPE)
+        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE)
         self.play(
             FadeIn(background), 
             FadeIn(europe_boundary), 
@@ -161,7 +158,7 @@ class Chapter11(Scene):
         # In my head, the biggest idea of A* is that we want to keep Dijsktra’s algorithm exactly the same and, instead, we will simply try to change the graph on which we run the algorithm. 
         # [Strategy: 1) change the graph 2) run Dijkstra on the new graph]
 
-        strategy = create_strategy(old = True, scale = 0.8).to_corner(DR)
+        strategy = create_strategy(old = True, scale = 0.8).to_corner(DR, buff = 0).set_z_index(1000)
         self.play(
             FadeIn(strategy)
         )
@@ -242,8 +239,7 @@ class Chapter12(MovingCameraScene):
     def construct(self):
         default()
         self.next_section(skip_animations=True)
-        background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
-        europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
+        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
         self.add(background, europe_boundary, G)
         self.add(
             *[e for e in G.edges.values()],
@@ -320,8 +316,7 @@ class Chapter12(MovingCameraScene):
 class Chapter13(MovingCameraScene): # TODO are the scenes joined properly?
     def construct(self):
         self.next_section(skip_animations=True)
-        background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
-        europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
+        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
         self.add(background, europe_boundary, G)
         self.add(
             *[e for e in G.edges.values()],
@@ -392,8 +387,7 @@ class Chapter14(ThreeDScene):
     def construct(self):
         Tex.set_default(color = GRAY)
         self.next_section(skip_animations=True)
-        background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
-        europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
+        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
         self.add(background, europe_boundary, G)
         self.add(
             *[e for e in G.edges.values()],
@@ -558,8 +552,7 @@ class Chapter15(ThreeDScene):
     def construct(self):
         Tex.set_default(color = GRAY)
         self.next_section(skip_animations=True)
-        background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
-        europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
+        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
         self.add(background, europe_boundary, G)
         self.add(
             *[e for e in G.edges.values()],

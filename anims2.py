@@ -3,9 +3,9 @@ from re import I
 from unittest import skip
 from manim import config as global_config
 
-from solarized import * # TODO nenacita se solarized
-from util import *
-from util_graph import *
+from utils.solarized import * # TODO nenacita se solarized
+from utils.util import *
+from utils.util_graph import *
 
 
 scroll_properties_str = [

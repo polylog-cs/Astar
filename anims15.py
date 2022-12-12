@@ -3,9 +3,10 @@ from re import I
 from unittest import skip
 from manim import config as global_config
 
-from solarized import * # TODO nenacita se solarized
-from util import *
-from util_graph import *
+from utils.solarized import * # TODO nenacita se solarized
+from utils.util import *
+from utils.util_graph import *
+from utils.util_cube import *
 
 random.seed(0)
 
@@ -251,27 +252,95 @@ class Puzzle(Scene):
         )
         self.wait()
 
-class Puzzle2(Scene):
-    def construct(self):
-        default()
-        scroll_stuff = create_scroll([-1, -1, -1, -1])
-        #scroll_stuff.next_to(tiles, RIGHT, buff = 1)
-
+        list_stuff = create_potential_list([-1, -1, -1, -1]).next_to(picture, RIGHT, buff = 1)
+        
         self.play(
-            FadeIn(scroll_stuff),
+            FadeIn(list_stuff),
         )
         self.wait()
 
         # Being a lower bound is not enough, we need to check that the heuristic is consistent but that is simple to do too. 
         
-        
+        height = 0.5
+        yeses = [
+            clipart_yes_no_maybe("yes", height = height).next_to(list_stuff[2 + 0], LEFT),
+            clipart_yes_no_maybe("yes", height = height).next_to(list_stuff[2 + 1], LEFT),
+            clipart_yes_no_maybe("yes", height = height).next_to(list_stuff[2 + 2], LEFT),
+            clipart_yes_no_maybe("yes", height = height).next_to(list_stuff[2 + 3], LEFT),
+        ]
+        self.play(
+            Succession(
+                FadeIn(yeses[0]),
+                FadeIn(yeses[3]),
+                FadeIn(yeses[2]),
+                FadeIn(yeses[1]),
+            )
+        )        
+        self.wait()
         
         # Also, we can compute the heuristic very fast, so we can plug it into A* and see what happens. We of course tried it out, and this is the result. On average, we needed a explored roughly only 10 million nodes in roughly 10 seconds. [ZBYTECNE *You can deal with high memory by running IDA* which relates to iterative deepening DFS the same way A* relates to Dijkstra. ]
 
+        tex_on_average = Tex("On average: $\sim$10\,000\,000 explored nodes and $\sim$ 10 seconds to find a solution. ").to_edge(DOWN)
+        self.play(FadeIn(tex_on_average))
+        self.wait()
+
         # I really wanted to show you this example because it features a very different heuristic than the one we saw in the case of road network graphs. In general, the A* algorithm is so amazing because whenever you decide to use it, the only problem specific challenge you need to address is finding a good consistent heuristic and then the A* framework does the rest. [split screen, ukázat oba příklady]
+
+
+        self.play(
+            *[FadeOut(yes) for yes in yeses],
+            FadeOut(list_stuff),
+            FadeOut(title),
+            FadeOut(tex_on_average),
+            #picture.animate.move_to(0.5 * config.frame_width/2 * RIGHT + 0.5 * config.frame_height/2 * UP).scale(0.5)
+
+        )
+        self.wait()
+        
+        
+
+
+
+ 
+class Puzzle2(RubikScene):
+    def construct(self):
+        default()
+        picture = Circle(1)
+        picture.generate_target()
+        picture.target.scale(0.5)
+
+        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE)
+        graph = Group(background, europe_boundary, G).move_to(0.5 * config.frame_width/2 * LEFT + 0.5 * config.frame_height/2 * UP).scale(0.2)
+
+        rubik_cube = RubiksCube(cubie_size=0.5)
+        Tex.set_default(font_size = 30)
+        
+        table = Group(
+            Dot(), Tex("Maps").scale(2), Tex("15 puzzle").scale(2), Tex("Rubik's cube").scale(2),
+            Dot(), graph, picture.target, rubik_cube,
+            Tex("Heuristic: "), Tex("Air distance"), Tex("sum of individual distances"), Tex(r"Heuristic(u) = min(dist(u, target), diameter/2)\\ a.k.a. meet in the middle if you know diameter").scale(0.7),
+            Tex("Speedup: "), Tex(r"$4\times$"), Tex(r"$10^6\times$"), Tex(r"$10^{10}\times$")
+        ).arrange_in_grid(rows = 4, cols = 4).move_to(ORIGIN)
+
+        self.play(
+            *[FadeIn(t) for t in table[1:3]],
+            FadeIn(graph), MoveToTarget(picture),
+            *[FadeIn(t) for t in table[8:11]],
+            *[FadeIn(t) for t in table[12:15]],
+        )
+        self.wait()
+
 
         # By the way, if this puzzle reminds you of our earlier video about solving Rubik’s cube using meet in the middle trick, then you will be delighted to know that A* is an even more powerful approach for solving the cube. 
         # In fact, you can kind of interpret the meet in the middle trick as running A* with a certain heuristic [na scéně obrázek grafu s potenciály co vypadají jako obrácený klobouk - možná k tomu šipka a “heuristic = precomputing distances from target up to distance 4” nebo tak něco] which I think shows how general and powerful A* is. Actually this is also why it’s called A*, it’s simply the best algorithm there is. 
+
+        self.play(
+            FadeIn(table[3]),
+            FadeIn(table[7]),
+            FadeIn(table[11]),
+            FadeIn(table[15]),
+        )
+        self.wait()
 
         # So, I hope you like it too and will see you next time. 
 
