@@ -5,16 +5,17 @@ import math
 from manim import *
 from util import *
 from queue import PriorityQueue
+import matplotlib.colors as mcolors
 
 # TODO uzsi sipky
 # https://docs.manim.community/en/stable/reference/manim.mobject.geometry.tips.ArrowTip.html
 
 class CustomGraph(Graph):
-
     edge_weights_vals = {} # edge -> ValueTracker
     edge_weights_objs = {} # edge -> Decimal
     vertex_names = {} # vertex -> Tex
     vertex_potentials = {} # vertex -> ValueTracker
+    vertex_height_lines = {} # vertex -> Line
     directed = True
 
     def make_directed(self, directed):
@@ -104,6 +105,17 @@ class CustomGraph(Graph):
                     ]
                 )
             )
+	
+        self.vertex_height_lines[v] = Line(#DashedLine(
+            start = self.vertices[v].get_center(),
+            end = np.array([self.vertices[v].get_center()[0], self.vertices[v].get_center()[1], 0]) + 0.001*DOWN,
+            color = GRAY,
+        ).add_updater(
+            lambda mob, v=v: mob.put_start_and_end_on(
+                self.vertices[v].get_center(),
+                np.array([self.vertices[v].get_center()[0], self.vertices[v].get_center()[1], 0]) + 0.001*DOWN
+            )
+        )
 
         for edge in self.edges:
             self.edge_weights_objs[edge].add_updater(
@@ -113,6 +125,29 @@ class CustomGraph(Graph):
                     - self.vertex_potentials[edge[0]].get_value()
                 )
             )
+
+	
+        # for edge in self.edges.keys():
+        #     u, v = edge
+        #     def updater(mob): #TODO fix
+        #         mob.set_value(
+        #             self.edge_weights_vals[edge].get_value()
+        #             + self.vertex_potentials[edge[1]].get_value()
+        #             - self.vertex_potentials[edge[0]].get_value()
+        #         )
+        #         weight = self.edge_weights_vals[edge].get_value()
+        #         pot_dif = self.vertex_potentials[v].get_value() - self.vertex_potentials[u].get_value()
+        #         if pot_dif > 0:
+        #             pot_dif_cropped = min(pot_dif, weight)
+        #             mob.set_color(
+        #                 mcolors.to_hex(  (pot_dif_cropped / weight ) * np.array(mcolors.to_rgb(RED)) + ( 1.0 - pot_dif_cropped / weight) * np.array(mcolors.to_rgb(GRAY)) )
+        #             )
+        #         else:
+        #             pot_dif_cropped = min(-pot_dif, weight)
+        #             mob.set_color(
+        #                 mcolors.to_hex( ( pot_dif_cropped / weight)  * np.array(mcolors.to_rgb(GREEN)) + ( 1.0 - pot_dif_cropped / weight) * np.array(mcolors.to_rgb(GRAY)) )
+        #             )
+        #     self.edge_weights_objs[edge].add_updater(updater)
 
     def gen_zero_potentials(self):
         pots = {}

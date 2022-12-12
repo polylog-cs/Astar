@@ -8,6 +8,13 @@ from typing import Set
 from solarized import *
 
 
+############### DEFAULT OPTIONS
+
+def default():
+    Tex.set_default(color = GRAY)
+    Integer.set_default(color = GRAY)
+    Tex.set_default(font_size = 60)
+
 ############### GENERATING SOUNDS
 
 def random_click_file():
@@ -926,3 +933,129 @@ def clipart_map_europe(scale = 1, undirected = True):
     #     potentials[v] = np.linalg.norm(G.vertices[v].get_center() - G.vertices[rome].get_center())
     G.setup_potentials(rate = 0.5)
     return (europe_boundary, G)
+
+
+scroll_properties_str = [
+    [
+        r"1. Distance from Prague to Rome\\ gets as small as possible. ",
+        "1. Potential of Prague as high as possible. ",
+        "1. Potential of Prague as close to dist(Prague, Rome) as possible. ",
+        "1. Potential(source) is close to dist(source, target). ",
+    ],
+    [
+        "2. All edge retain nonnegative lengths. ",
+        r"2. For every edge $(u,v):$ \\potential$(u)$ $\le $ potential$(v)$ + length$(u,v)$ "
+    ],
+    [
+        r"\;\;\; Intuition: For every node $u$ \\potential$(u)$ $\le $ dist($u$, solution)"
+    ],
+    [
+        "3. We can compute it fast.  "
+    ],
+]
+
+def create_scroll(options):
+    scroll = ImageMobject("img/scroll.png").scale_to_fit_height(4).rotate(90/360.0*2*PI)
+    scroll_header_scale = 0.8
+    scroll_properties_scale = 0.5
+    scroll_header = Tex("Good potential satisfies: ").scale(scroll_header_scale).move_to(
+        scroll.get_center()
+    ).align_to(scroll, UP).shift(0.3*DOWN)
+
+    scroll_properties = []
+    for i in range(4):
+        scroll_properties.append(
+            Tex(scroll_properties_str[i][options[i]]).scale(scroll_properties_scale)
+        )
+
+    Group(*scroll_properties).arrange_in_grid(cols = 1, col_alignments="l").next_to(
+        scroll_header, DOWN
+    ).align_to(scroll_header, LEFT)
+
+    return Group(scroll, scroll_header, *scroll_properties)
+
+def create_strategy(old=True, scale = 1):
+
+    scale_small = 0.6
+    if old:
+        strategy = Group(*[
+            Tex("A* strategy: ").scale(scale),
+            Tex("1. Change the graph!").scale(scale_small * scale),
+            Tex("2. Run Dijkstra on the new graph. ").scale(scale_small * scale)
+        ]).arrange_in_grid(cols = 1, cell_alignment = LEFT)
+    else:
+        strategy = Group(*[
+            Tex("A* algorithm: ").scale(scale),
+            Tex("1. Find some clever potentials. ").scale(scale_small * scale),
+            Tex("2. Apply potential reweighting. ").scale(scale_small * scale),
+            Tex("3. Run Dijkstra on the new graph. ").scale(scale_small * scale)
+        ]).arrange_in_grid(cols = 1, cell_alignment = LEFT)
+
+    scroll = ImageMobject("img/scroll.png").scale_to_fit_height(3.5).scale(scale)
+    strategy.move_to(scroll.get_center())
+
+    return Group(scroll, strategy)
+
+
+
+def basicDijkstraRun(scene, G, variant = None):
+    anims, lines, path_nodes, path_edges = G.run_dijkstra(PRAGUE, ROME, 3)
+    scene.play(
+        anims
+    )
+    scene.wait()
+
+    scene.play(
+        *[FadeOut(line) for line in lines],
+        *[G.vertices[v].animate.set_color(RED) for v in path_nodes],
+        *[G.edges[e].animate.set_color(RED) for e in path_edges[0:len(path_edges) // 2]],
+    )
+    scene.wait()        
+
+    scene.play(
+        *[G.vertices[v].animate.set_color(GRAY) for v in path_nodes],
+        *[G.edges[e].animate.set_color(GRAY) for e in path_edges[0:len(path_edges) // 2]],
+    )
+    scene.wait()
+
+def changeWeights(scene, G, new_weights, color = RED):
+    scene.play(
+        *[G.edges[e].animate.set_color(color) for e in new_weights.keys()],
+        *[G.edge_weights_objs[e].animate.set_color(color) for e in new_weights.keys()],
+        run_time = 0.3
+    )
+    scene.play(
+        *[G.edge_weights_vals[(u,v)].animate.set_value(val) for ((u,v), val) in new_weights.items()]
+    )
+    scene.wait()
+    scene.play(
+        *[G.edges[e].animate.set_color(GRAY) for e in new_weights.keys()],
+        *[G.edge_weights_objs[e].animate.set_color(GRAY) for e in new_weights.keys()],
+        run_time = 0.3
+    )
+    
+    scene.wait()
+
+# TODO update edge colors
+def simple_reweighting(scene, G, edges_plus, edges_minus, change):
+    scene.play(
+        *[G.edge_weights_vals[e].animate.increment_value(change) for e in edges_plus],
+        *[G.edge_weights_vals[e].animate.increment_value(-change) for e in edges_minus],
+    )
+    scene.wait()
+
+def go_along_path(scene, G, path):
+    circ = Dot(radius = 0.05, color = RED, fill_opacity=1.0, fill_color = RED).move_to(G.edges[path[0]].get_start())
+    scene.play(FadeIn(circ))
+    
+    for i in range(len(path)):
+        scene.play(
+            circ.animate.move_to(G.edges[path[i]].get_end())
+        )
+        if i != len(path)-1:
+            scene.play(
+                circ.animate.move_to(G.edges[path[i+1]].get_start()),
+                run_time = 0.2
+            )
+    scene.play(FadeOut(circ))
+    scene.wait()
