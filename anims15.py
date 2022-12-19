@@ -280,7 +280,7 @@ class Puzzle(Scene):
         
         # Also, we can compute the heuristic very fast, so we can plug it into A* and see what happens. We of course tried it out, and this is the result. On average, we needed a explored roughly only 10 million nodes in roughly 10 seconds. [ZBYTECNE *You can deal with high memory by running IDA* which relates to iterative deepening DFS the same way A* relates to Dijkstra. ]
 
-        tex_on_average = Tex("On average: $\sim$10\,000\,000 explored nodes and $\sim$ 10 seconds to find a solution. ").to_edge(DOWN)
+        tex_on_average = Tex("On average: $\sim$10\,000\,000 explored nodes and $\sim$ 10 seconds to find a solution. ").scale(0.6).to_edge(DOWN)
         self.play(FadeIn(tex_on_average))
         self.wait()
 

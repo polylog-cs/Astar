@@ -6,9 +6,35 @@ from manim import *
 from utils.util import *
 from queue import PriorityQueue
 import matplotlib.colors as mcolors
-
+PRAGUE = 0
+ROME = 1
 # TODO uzsi sipky
 # https://docs.manim.community/en/stable/reference/manim.mobject.geometry.tips.ArrowTip.html
+
+def color_from_potential(weight, pot_dif):
+    weight = 1
+    if pot_dif > 0:
+        pot_dif_cropped = min(pot_dif, weight)
+        return mcolors.to_hex(  
+                (pot_dif_cropped / weight ) * np.array(mcolors.to_rgb(RED)) 
+                + ( 1.0 - pot_dif_cropped / weight) * np.array(mcolors.to_rgb(GRAY)) 
+            )
+    else:
+        pot_dif_cropped = min(-pot_dif, weight)
+        return mcolors.to_hex( ( pot_dif_cropped / weight)  * np.array(mcolors.to_rgb(GREEN)) + ( 1.0 - pot_dif_cropped / weight) * np.array(mcolors.to_rgb(GRAY)) )
+
+def edge_potential_updater(mob, edge, graph):
+    u = edge[0]
+    v = edge[1]
+    mob.set_value(
+        graph.edge_weights_vals[edge].get_value()
+        + graph.vertex_potentials[edge[1]].get_value()
+        - graph.vertex_potentials[edge[0]].get_value()
+    )
+    weight = graph.edge_weights_vals[edge].get_value()
+    pot_dif = graph.vertex_potentials[v].get_value() - graph.vertex_potentials[u].get_value()
+    mob.set_color(color_from_potential(weight, pot_dif))
+
 
 class CustomGraph(Graph):
     edge_weights_vals = {} # edge -> ValueTracker
@@ -17,7 +43,7 @@ class CustomGraph(Graph):
     vertex_potentials = {} # vertex -> ValueTracker
     vertex_height_lines = {} # vertex -> Line
     directed = True
-
+    
     def make_directed(self, directed):
         self.directed = directed
 
@@ -88,6 +114,20 @@ class CustomGraph(Graph):
             self.edge_weights_objs[edge].animate().increment_value(change),
         )
 
+    # for 2D scenes
+    def disable_heights(self):
+        for v in self.vertices:
+            self.vertices[v].add_updater(
+                lambda mob, v=v: mob.move_to(
+                    [
+                        mob.get_center()[0],
+                        mob.get_center()[1],
+                        0
+                    ]
+                )
+            )
+
+
     def setup_potentials(self, potentials = {}, rate = 1):
         # updater: edge_length = original_edge_length + potential(v) - potential(u)
         # ideally (but maybe hard), add also updater on the color, so that when it decreases/increases it gets a shade of green/red based on how fast it increases/decreases
@@ -105,49 +145,38 @@ class CustomGraph(Graph):
                     ]
                 )
             )
-	
-        self.vertex_height_lines[v] = Line(#DashedLine(
-            start = self.vertices[v].get_center(),
-            end = np.array([self.vertices[v].get_center()[0], self.vertices[v].get_center()[1], 0]) + 0.001*DOWN,
-            color = GRAY,
-        ).add_updater(
-            lambda mob, v=v: mob.put_start_and_end_on(
-                self.vertices[v].get_center(),
-                np.array([self.vertices[v].get_center()[0], self.vertices[v].get_center()[1], 0]) + 0.001*DOWN
-            )
-        )
-
-        for edge in self.edges:
-            self.edge_weights_objs[edge].add_updater(
-                lambda mob, edge = edge: mob.set_value(
-                    self.edge_weights_vals[edge].get_value()
-                    + self.vertex_potentials[edge[1]].get_value()
-                    - self.vertex_potentials[edge[0]].get_value()
+        for v in self.vertices:
+            self.vertex_height_lines[v] = Line(#DashedLine(
+                start = self.vertices[v].get_center(),
+                end = np.array([self.vertices[v].get_center()[0], self.vertices[v].get_center()[1], 0]) + 0.001*DOWN,
+                color = GRAY,
+                stroke_width = 10
+            ).add_updater(
+                lambda mob, v=v: mob.put_start_and_end_on(
+                    self.vertices[v].get_center(),
+                    np.array([self.vertices[v].get_center()[0], self.vertices[v].get_center()[1], 0]) + 0.001*DOWN
                 )
             )
 
+        for edge in self.edges:
+            
+
+            def edge_arrow_potential_updater(mob, edge):
+                u = edge[0]
+                v = edge[1]
+                weight = self.edge_weights_vals[edge].get_value()
+                pot_dif = self.vertex_potentials[v].get_value() - self.vertex_potentials[u].get_value()
+                mob.set_color(color_from_potential(weight, pot_dif))
+
+
+            self.edge_weights_objs[edge].add_updater(
+                lambda mob, edge = edge: edge_potential_updater(mob, edge, self)
+            )
+            self.edges[edge].add_updater(
+                lambda mob, edge = edge: edge_arrow_potential_updater(mob, edge)
+            )
+
 	
-        # for edge in self.edges.keys():
-        #     u, v = edge
-        #     def updater(mob): #TODO fix
-        #         mob.set_value(
-        #             self.edge_weights_vals[edge].get_value()
-        #             + self.vertex_potentials[edge[1]].get_value()
-        #             - self.vertex_potentials[edge[0]].get_value()
-        #         )
-        #         weight = self.edge_weights_vals[edge].get_value()
-        #         pot_dif = self.vertex_potentials[v].get_value() - self.vertex_potentials[u].get_value()
-        #         if pot_dif > 0:
-        #             pot_dif_cropped = min(pot_dif, weight)
-        #             mob.set_color(
-        #                 mcolors.to_hex(  (pot_dif_cropped / weight ) * np.array(mcolors.to_rgb(RED)) + ( 1.0 - pot_dif_cropped / weight) * np.array(mcolors.to_rgb(GRAY)) )
-        #             )
-        #         else:
-        #             pot_dif_cropped = min(-pot_dif, weight)
-        #             mob.set_color(
-        #                 mcolors.to_hex( ( pot_dif_cropped / weight)  * np.array(mcolors.to_rgb(GREEN)) + ( 1.0 - pot_dif_cropped / weight) * np.array(mcolors.to_rgb(GRAY)) )
-        #             )
-        #     self.edge_weights_objs[edge].add_updater(updater)
 
     def gen_zero_potentials(self):
         pots = {}
@@ -198,11 +227,12 @@ class CustomGraph(Graph):
         )
 
         self.edges[(u,v)] = edge
-        def edge_updater(mob):
+
+        def edge_updater(mob, u, v, offset):
             start_pos, end_pos = compute_positions(u, v, offset)
             mob.put_start_and_end_on(start_pos, end_pos)
 
-        edge.add_updater(edge_updater)
+        edge.add_updater(lambda mob, u=u, v=v, offset=offset: edge_updater(mob, u, v, offset))
         edge.put_start_and_end_on(start_pos, end_pos)
 
         self.create_edge_length((u,v), weight, offset_weight)
@@ -276,7 +306,7 @@ class CustomGraph(Graph):
             shortest_path_edges[1].append((node, pred))
             node = pred
 
-        all_lines = []
+        all_lines = {}
         for anim in mover_anims:
             (start_pos, end_pos, start_time, end_time, node, neighbor) = anim
             #finish_time = min(finish_time, distances[end_node])
@@ -304,13 +334,18 @@ class CustomGraph(Graph):
                 )
             )
             print(node, neighbor, start_time, end_time)
-            all_lines.append(line)
+            all_lines[(node, neighbor)] = line
+        
+        # all_anims.append(Flash(self.vertices[PRAGUE], color = RED))
+        # all_anims.append(Succession(Wait(distances[ROME] * speed), Flash(self.vertices[ROME], color = RED)))
+        
 
         return (
             AnimationGroup(*all_anims),
             all_lines,
             shortest_path_nodes,
-            shortest_path_edges[0] + shortest_path_edges[1]
+            shortest_path_edges[0] + shortest_path_edges[1],
+            distances
         )
         
 

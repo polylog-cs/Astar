@@ -13,7 +13,10 @@ from manim.utils.unit import Percent
 def default():
     VMobject.set_default(color = GRAY)
     Polygon.set_default(color = RED)
-    SurroundingRectangle.set_default(color = RED)
+    # SurroundingRectangle.set_default(color = RED)
+    # SurroundingRectangle.set_default(fill_color = config.background_color)
+    # SurroundingRectangle.set_default(fill_opacity = 1)
+
 ############### GENERATING SOUNDS
 
 def random_click_file():
@@ -47,13 +50,13 @@ def random_rubik_file():
 
 PRAGUE = 0
 ROME = 1
-N_CITIES = 35
+N_CITIES = 32
 SCALE_EUROPE = 1.25
 
 def clipart_arrow():
-    return ImageMobject("img/arrow.png", z_index = 10000).scale_to_fit_height(0.7)
+    return ImageMobject("img/arrow.png").scale_to_fit_height(0.7)
 
-def clipart_house(color = RED, height = 1, z_index = 100):
+def clipart_house(color = RED, height = 1, z_index = 0):
     pnts = [
         np.array([232.535, 333.808, 0.0]),
         np.array([277.698, 333.811, 0.0]),
@@ -91,7 +94,7 @@ def clipart_house(color = RED, height = 1, z_index = 100):
 
     return house   
 
-def clipart_icon(color = BLUE, height = 1, z_index = 100):
+def clipart_icon(color = BLUE, height = 1, z_index = 0):
     pnts = [
         np.array([407.837, 313.233, 0.0]),
         np.array([340.843, 431.234, 0.0]),
@@ -340,7 +343,7 @@ def clipart_yes_no_maybe(which, height):
     else:
         return Group(circle, clipart, small_circle)
 
-def clipart_map_europe(scale = 1, undirected = True):
+def clipart_map_europe(scale = 1, undirected = True, rate = 0.5, setup_potentials = True ):
     pnts_europe = [
         np.array([404.246, 552.657, 0]),
         np.array([404.373, 545.566, 0]),
@@ -476,17 +479,16 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([1, 307.112, 427.572]) + np.array([0, 0, 0]),
         np.array([2, 287.537, 312.262]),
         np.array([1, 304.973, 297.951]),
-        np.array([1, 323.561, 281.172]),
+        np.array([1, 261.301, 524.645]),
         np.array([1, 335.569, 296.47]),
         np.array([1, 288.359, 338.581]),
         np.array([1, 270.594, 359.471]),
         np.array([1, 298.229, 390.725]) + np.array([0, 3, -7]),
-        np.array([2, 278.983, 398.292]) + np.array([0, -5, 0]),
+        np.array([2, 278.983, 398.292]) + np.array([0, -10, 0]),
         np.array([1, 250.361, 427.572]),
 
         np.array([2, 188.183, 408.82]),
         np.array([2, 297.571, 464.583]) + np.array([0, 0, 7]),
-        #np.array([1, 333.266, 442.705]),
         np.array([2, 371.429, 460.8]),
         np.array([1, 401.366, 423.459]),
         np.array([2, 464.697, 433.0]),
@@ -494,8 +496,8 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([1, 323.067, 365.064]),
         np.array([1, 346.261, 337.265]),
         np.array([2, 422.257, 345.818]),
-
         np.array([1, 447.754, 381.843]),
+        
         np.array([1, 393.471, 321.802]),
         np.array([2, 398.077, 261.433]),
         np.array([1, 219.107, 330.52]),
@@ -504,14 +506,12 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([1, 161.041, 350.589]),
         np.array([2, 207.922, 438.264]),
         np.array([1, 213.021, 364.242]),
-        np.array([1, 249.21, 385.461]),
-
         np.array([1, 413.704, 500.936]),
         np.array([1, 347.742, 497.153]),
+
         np.array([1, 263.685, 481.361]),
         np.array([1, 397.944, 379.455]),
-        np.array([1, 261.301, 524.645]),
-        np.array([1, 250.361, 427.572]),
+        
     ]
     
     pnts_paths = [
@@ -522,14 +522,14 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([320.39, 441.558, 0]),
         np.array([308.382, 428.589, 0]),
     ],
-    [
-        np.array([322.82, 282.496, 0]),
-        np.array([321.399, 286.139, 0]),
-        np.array([318.339, 288.391, 0]),
-        np.array([315.336, 292.837, 0]),
-        np.array([311.467, 296.706, 0]),
-        np.array([306.268, 297.663, 0]),
-    ],
+    # [
+    #     np.array([322.82, 282.496, 0]),
+    #     np.array([321.399, 286.139, 0]),
+    #     np.array([318.339, 288.391, 0]),
+    #     np.array([315.336, 292.837, 0]),
+    #     np.array([311.467, 296.706, 0]),
+    #     np.array([306.268, 297.663, 0]),
+    # ],
     [
         np.array([304.486, 299.184, 0]),
         np.array([303.69, 305.727, 0]),
@@ -630,11 +630,7 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([276.27, 373.06, 0]),
         np.array([271.47, 360.367, 0]),
     ],
-    [
-        np.array([277.022, 398.512, 0]),
-        np.array([260.091, 396.451, 0]),
-        np.array([249.978, 386.888, 0]),
-    ],
+
     [
         np.array([219.105, 332.508, 0]),
         np.array([211.528, 345.265, 0]),
@@ -663,12 +659,16 @@ def clipart_map_europe(scale = 1, undirected = True):
         np.array([238.01, 431.089, 0]),
         np.array([249.245, 427.899, 0]),
     ],
+    
     [
         np.array([214.707, 365.281, 0]),
         np.array([227.305, 373.312, 0]),
         np.array([233.835, 381.888, 0]),
         np.array([247.644, 385.045, 0]),
+        np.array([260.091, 396.451, 0]),
+        np.array([277.022, 398.512, 0]),
     ],
+    
     [
         np.array([278.041, 400.027, 0]),
         np.array([265.023, 406.839, 0]),
@@ -824,10 +824,10 @@ def clipart_map_europe(scale = 1, undirected = True):
         return pnt/50.0 * scale
 
     #### boundary
-    background = Rectangle(fill_color = BLUE, fill_opacity = 1, height = 9, width =15, z_index = -100)
+    background = Rectangle(fill_color = BASE02, fill_opacity = 1, height = 9, width =15, z_index = -100)
     europe_boundary = Polygon(
         *[normalize(pnt) for pnt in pnts_europe],
-        color = BLUE,
+        color = BASE02,
         fill_color = config.background_color,
         fill_opacity = 1,
         z_index = -90,
@@ -860,6 +860,16 @@ def clipart_map_europe(scale = 1, undirected = True):
     betaN = N_MADRID - alphaN * G.vertices[MADRID].get_center()[1]
     
 
+    DOWNISH = 0.3*DOWN
+    pos = [
+        RIGHT, RIGHT, LEFT, RIGHT, RIGHT,
+        RIGHT, RIGHT + DOWNISH, RIGHT, LEFT, LEFT + DOWNISH,
+        LEFT, RIGHT, RIGHT, RIGHT + DOWNISH, RIGHT,
+        RIGHT, RIGHT, RIGHT, RIGHT, RIGHT, RIGHT,
+        RIGHT, RIGHT + DOWNISH, RIGHT, RIGHT + DOWNISH, LEFT,
+        LEFT, LEFT, RIGHT, UP*0.4, LEFT, 
+        RIGHT, RIGHT
+    ]
     for i in range(len(pnts_cities)):
         E_city = alphaE * G.vertices[i].get_center()[0] + betaE
         N_city = alphaN * G.vertices[i].get_center()[1] + betaN
@@ -867,7 +877,7 @@ def clipart_map_europe(scale = 1, undirected = True):
         if E_city < 0:
             name = "[{:d}W, {:d}N]".format(-round(E_city), round(N_city))
             
-        G.create_name(i, name, 0.66*RIGHT)
+        G.create_name(i, name, 0.66 * pos[i])
 
     #### paths
 
@@ -887,10 +897,10 @@ def clipart_map_europe(scale = 1, undirected = True):
             alpha = 1.2
             def add_edge(u, v):
                 G.add_edges((u, v))
-                G.edges[(u, v)].set_z_index(100).set_color(GRAY)
+                G.edges[(u, v)].set_color(GRAY)
                 G.create_edge_length((u,v), alpha * np.linalg.norm(G.vertices[u].get_center()-G.vertices[v].get_center()))
                 G.add_edges((v, u))
-                G.edges[(v, u)].set_z_index(100).set_color(GRAY)
+                G.edges[(v, u)].set_color(GRAY)
                 G.create_edge_length((v,u), alpha * np.linalg.norm(G.vertices[u].get_center()-G.vertices[v].get_center()))
                 
             for i in range(1, len(path)-1, 1):
@@ -925,57 +935,60 @@ def clipart_map_europe(scale = 1, undirected = True):
                 weight = weight,
                 offset_weight = -2*offset,
             )
-    ### set up potentials
-    # potentials = {}
-    # rome = 1
-    # for v in G.vertices:
-    #     potentials[v] = np.linalg.norm(G.vertices[v].get_center() - G.vertices[rome].get_center())
-    G.setup_potentials(rate = 0.5)
+
+    if setup_potentials:
+        G.setup_potentials(rate = rate)
     return (background, europe_boundary, G)
 
 
 list_properties_str = [
     [
-        r"1. Distance from Prague to Rome\\ gets as small as possible. ",
-        "1. Potential of Prague as high as possible. ",
-        "1. Potential of Prague as close to dist(Prague, Rome) as possible. ",
-        r"{{1. Potential(source) is close to \\ }}{{dist(source, target). }}",
+        r"1. potential(Prague) as high as possible ",
+        r"1. potential(start) as high as possible ",
+        r"1. heuristic(start) as high as possible",
     ],
     [
-        "2. All edge retain nonnegative lengths. ",
-        r"{{2. For every edge $(u,v):$ \\}}{{potential$(u)$ $\le $ potential$(v)$ + length$(u,v)$ }}"
+        r"{{2. For every edge $(u,v):$ \\}}{{potential$(u)$ $\le $ potential$(v)$ + length$(u,v)$ }}",
+        r"{{2. For every edge $(u,v):$ \\}}{{potential$(u)$ $\le $ potential$(v)$ + length$(u,v)$ }}",
+        r"{{2. For every edge $(u,v):$ \\}}{{heuristic$(u)$ $\le $ heuristic$(v)$ + length$(u,v)$ }}",
     ],
     [
-        r"{{\;\;\; Intuition: For every node $u$ \\}}{{potential$(u)$ $\le $ dist($u$, target)}}"
+        r"{{Implies that for every node $u$: \\}}{{potential$(u)$ $\le $ distance($u$, Rome)}}",
+        r"{{Implies that for every node $u$: \\}}{{potential$(u)$ $\le $ distance($u$, end)}}",
+        r"{{Implies that for every node $u$: \\}}{{heuristic$(u)$ $\le $ distance($u$, end)}}",
     ],
     [
-        "3. We can compute it fast.  "
+        r"3. We can compute it fast.  ",
+        r"3. We can compute it fast.  ",
+        r"3. We can compute it fast.  ",
     ],
 ]
 
-def create_potential_list(options):
-    list_header_scale = 0.8
-    list_properties_scale = 0.5
-    list_header = Tex("Good potential satisfies: ").scale(list_header_scale)
-
+def create_potential_list(options, heuristic = False):
+    list_header_scale = 1.1
+    list_properties_scale = 1
+    list_header = Tex("Good potential satisfies: ", font_size = 35).scale(list_header_scale)
+    if heuristic == True:
+        list_header = Tex("Good heuristic satisfies: ", font_size = 35).scale(list_header_scale)
+        
     list_properties = []
     for i in range(4):
-        txt = Tex(list_properties_str[i][options[i]]).scale(list_properties_scale)
+        txt = Tex(list_properties_str[i][options[i]], font_size = 30).scale(list_properties_scale)
         list_properties.append(txt)
-        if i == 0 and options[i] == -1:
-            txt[1].shift(0.5 * RIGHT)
-        if i == 1 and options[i] == -1:
-            txt[1].shift(1 * RIGHT)
-        if i == 2 and options[i] == -1:
-            txt[1].shift(1 * RIGHT)
+
 
     Group(*list_properties).arrange_in_grid(cols = 1, col_alignments="l").next_to(
         list_header, DOWN
     ).align_to(list_header, LEFT)
 
-    border = SurroundingRectangle(Group(list_header, *list_properties), corner_radius = 0.3, fill_opacity = 1, fill_color = config.background_color)
+    list_properties[1][0].align_to(list_properties[0], LEFT)
+    list_properties[2].scale(0.8)
+    list_properties[2][0].align_to(list_properties[0], LEFT)
+    list_properties[2][1].move_to(np.array([list_properties[1][1].get_center()[0], list_properties[2][1].get_center()[1], 0]))
 
-    return Group(border, list_header, *list_properties)
+    border = SurroundingRectangle(Group(list_header, *list_properties), corner_radius = 0.3, fill_opacity = 1, fill_color = config.background_color, color = RED)
+
+    return Group(border, list_header, *list_properties).move_to(ORIGIN)
 
 def create_strategy(old=True, scale = 1):
 
@@ -983,18 +996,19 @@ def create_strategy(old=True, scale = 1):
     if old:
         strategy = Group(*[
             Tex("A* strategy: ").scale(scale),
-            Tex("1. Change the graph!").scale(scale_small * scale),
+            Tex("1. Change the weights!").scale(scale_small * scale),
             Tex("2. Run Dijkstra on the new graph. ").scale(scale_small * scale)
         ]).arrange_in_grid(cols = 1, cell_alignment = LEFT)
     else:
+        scale_new = 0.9
         strategy = Group(*[
-            Tex("A* algorithm: ").scale(scale),
-            Tex("1. Find some clever potentials. ").scale(scale_small * scale),
-            Tex("2. Apply potential reweighting. ").scale(scale_small * scale),
-            Tex("3. Run Dijkstra on the new graph. ").scale(scale_small * scale)
+            Tex("A* algorithm: ").scale(scale * scale_new),
+            Tex("1. Compute clever potentials. ").scale(scale_small * scale * scale_new),
+            Tex("2. Apply potential reweighting. ").scale(scale_small * scale * scale_new),
+            Tex("3. Run Dijkstra on the new graph. ").scale(scale_small * scale * scale_new)
         ]).arrange_in_grid(cols = 1, cell_alignment = LEFT)
 
-    scroll = ImageMobject("img/scroll_transparent.png").scale_to_fit_height(4.5).scale(scale)
+    scroll = ImageMobject("img/scroll_transparent.png").scale_to_fit_height(3.5).scale(scale)
     strategy.move_to(scroll.get_center())
 
     return Group(scroll, strategy)
@@ -1002,22 +1016,20 @@ def create_strategy(old=True, scale = 1):
 
 
 def basicDijkstraRun(scene, G, variant = None):
-    anims, lines, path_nodes, path_edges = G.run_dijkstra(PRAGUE, ROME, 3)
+    anims, lines, path_nodes, path_edges, _ = G.run_dijkstra(PRAGUE, ROME, 3)
+    scene.play(Flash(G.vertices[PRAGUE], color = RED))
     scene.play(
         anims
     )
+    scene.play(Flash(G.vertices[ROME], color = RED))
     scene.wait()
 
     scene.play(
-        *[FadeOut(line) for line in lines],
-        *[G.vertices[v].animate.set_color(RED) for v in path_nodes],
-        *[G.edges[e].animate.set_color(RED) for e in path_edges[0:len(path_edges) // 2]],
+        *[FadeOut(line) for (edge, line) in lines.items() if edge not in path_edges],
     )
     scene.wait()        
-
     scene.play(
-        *[G.vertices[v].animate.set_color(GRAY) for v in path_nodes],
-        *[G.edges[e].animate.set_color(GRAY) for e in path_edges[0:len(path_edges) // 2]],
+        *[FadeOut(line) for (edge, line) in lines.items() if edge in path_edges],
     )
     scene.wait()
 
@@ -1040,10 +1052,14 @@ def changeWeights(scene, G, new_weights, color = RED):
     scene.wait()
 
 # TODO update edge colors
-def simple_reweighting(scene, G, edges_plus, edges_minus, change):
+def simple_reweighting(scene, G, edges_plus, edges_minus, change, weight, diff):
+
+    #TODO fix at je to smooth
     scene.play(
-        *[G.edge_weights_vals[e].animate.increment_value(change) for e in edges_plus],
-        *[G.edge_weights_vals[e].animate.increment_value(-change) for e in edges_minus],
+        *[G.edge_weights_objs[e].animate.increment_value(change).set_color(color_from_potential(weight, diff)) for e in edges_plus],
+        *[G.edge_weights_objs[e].animate.increment_value(-change).set_color(color_from_potential(weight, diff)) for e in edges_minus],
+        *[G.edges[e].animate.set_color(color_from_potential(weight, diff)) for e in edges_plus],
+        *[G.edges[e].animate.set_color(color_from_potential(weight, diff)) for e in edges_minus],    
     )
     scene.wait()
 
@@ -1062,3 +1078,9 @@ def go_along_path(scene, G, path):
             )
     scene.play(FadeOut(circ))
     scene.wait()
+
+def rome_tex_name(G, scale = 1):
+    return Tex(r"Rome", color = RED).scale(scale).move_to(G.vertices[ROME].get_center() + 0.8*LEFT)
+
+def prague_tex_name(G, scale = 1):
+    return Tex(r"Prague", color = RED).scale(scale).move_to(G.vertices[PRAGUE].get_center() + 0.5*LEFT + 0.3*UP)
