@@ -967,13 +967,13 @@ list_properties_str = [
 def create_potential_list(options, heuristic = False):
     list_header_scale = 1.1
     list_properties_scale = 1
-    list_header = Tex("Good potential satisfies: ", font_size = 35).scale(list_header_scale)
+    list_header = Tex("Good potential satisfies: ", z_index = 1000000, font_size = 35).scale(list_header_scale)
     if heuristic == True:
-        list_header = Tex("Good heuristic satisfies: ", font_size = 35).scale(list_header_scale)
+        list_header = Tex("Good heuristic satisfies: ", z_index = 1000000, font_size = 35).scale(list_header_scale)
         
     list_properties = []
     for i in range(4):
-        txt = Tex(list_properties_str[i][options[i]], font_size = 30).scale(list_properties_scale)
+        txt = Tex(list_properties_str[i][options[i]], font_size = 30, z_index = 1000000).scale(list_properties_scale)
         list_properties.append(txt)
 
 
@@ -986,9 +986,14 @@ def create_potential_list(options, heuristic = False):
     list_properties[2][0].align_to(list_properties[0], LEFT)
     list_properties[2][1].move_to(np.array([list_properties[1][1].get_center()[0], list_properties[2][1].get_center()[1], 0]))
 
-    border = SurroundingRectangle(Group(list_header, *list_properties), corner_radius = 0.3, fill_opacity = 1, fill_color = config.background_color, color = RED)
+    border = SurroundingRectangle(
+        Group(list_header, *list_properties), 
+        corner_radius = 0.3, 
+        fill_opacity = 1, 
+        fill_color = config.background_color, 
+        color = RED)
 
-    return Group(border, list_header, *list_properties).move_to(ORIGIN)
+    return Group(border, list_header, *list_properties).set_z_index(1000).move_to(ORIGIN)
 
 def create_strategy(old=True, scale = 1):
 
@@ -1057,9 +1062,9 @@ def simple_reweighting(scene, G, edges_plus, edges_minus, change, weight, diff):
     #TODO fix at je to smooth
     scene.play(
         *[G.edge_weights_objs[e].animate.increment_value(change).set_color(color_from_potential(weight, diff)) for e in edges_plus],
-        *[G.edge_weights_objs[e].animate.increment_value(-change).set_color(color_from_potential(weight, diff)) for e in edges_minus],
+        *[G.edge_weights_objs[e].animate.increment_value(-change).set_color(color_from_potential(weight, -diff)) for e in edges_minus],
         *[G.edges[e].animate.set_color(color_from_potential(weight, diff)) for e in edges_plus],
-        *[G.edges[e].animate.set_color(color_from_potential(weight, diff)) for e in edges_minus],    
+        *[G.edges[e].animate.set_color(color_from_potential(weight, -diff)) for e in edges_minus],    
     )
     scene.wait()
 
@@ -1084,3 +1089,4 @@ def rome_tex_name(G, scale = 1):
 
 def prague_tex_name(G, scale = 1):
     return Tex(r"Prague", color = RED).scale(scale).move_to(G.vertices[PRAGUE].get_center() + 0.5*LEFT + 0.3*UP)
+

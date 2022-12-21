@@ -251,7 +251,7 @@ class Chapter11(MovingCameraScene):
 
         basicDijkstraRun(self, G)
 
-        tex_how_can = Tex("How can we change weights without changing which path is the shortest? ", z_index = 100).scale(0.8).to_edge(UP)
+        tex_how_can = Tex("How can we change lengths without changing which path is the shortest? ", z_index = 100).scale(0.8).to_edge(UP)
         rec = SurroundingRectangle(tex_how_can, color = RED, fill_opacity = 1.0, fill_color = config.background_color)
 
         self.play(
@@ -473,29 +473,29 @@ class Chapter13(MovingCameraScene):
         # self.play(self.camera.frame.animate.move_to(G.vertices[8].get_center()))
         # self.play(G.vertex_potentials[PRAGUE].animate.increment_value(1))
  
-        self.play(self.camera.frame.animate.scale(1.0 / 0.3).move_to(ORIGIN))
+        # self.play(self.camera.frame.animate.scale(1.0 / 0.3).move_to(ORIGIN))
 
-        self.play(*[G.vertices[v].animate.scale(2.0) for v in [PRAGUE, 7, 6]])
-        self.wait()
-        self.play(*[G.vertices[v].animate.scale(1/2.0) for v in [PRAGUE, 7, 6]])
-        self.wait()
+        # self.play(*[G.vertices[v].animate.scale(2.0) for v in [PRAGUE, 7, 6]])
+        # self.wait()
+        # self.play(*[G.vertices[v].animate.scale(1/2.0) for v in [PRAGUE, 7, 6]])
+        # self.wait()
 
 
-        PARIS = 10
-        KYIV = 14
-        G.vertices[PARIS].save_state()
-        G.vertices[KYIV].save_state()
+        # PARIS = 10
+        # KYIV = 14
+        # G.vertices[PARIS].save_state()
+        # G.vertices[KYIV].save_state()
     
-        self.play(
-            G.vertices[PARIS].animate.scale(2.0).set_color(RED),
-            G.vertices[KYIV].animate.scale(2.0).set_color(RED)
-        )        
-        self.wait()
-        self.play(
-            G.vertices[PARIS].animate.restore(),
-            G.vertices[KYIV].animate.restore(),
-        )        
-        self.wait()
+        # self.play(
+        #     G.vertices[PARIS].animate.scale(2.0).set_color(RED),
+        #     G.vertices[KYIV].animate.scale(2.0).set_color(RED)
+        # )        
+        # self.wait()
+        # self.play(
+        #     G.vertices[PARIS].animate.restore(),
+        #     G.vertices[KYIV].animate.restore(),
+        # )        
+        # self.wait()
 
         # reset weights
 

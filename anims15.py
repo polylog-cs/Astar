@@ -10,10 +10,67 @@ from utils.util_cube import *
 
 random.seed(0)
 
+magic = [3, 1, 4, 6]
+moves_seq = "DRDLDRRRULDLUURDRUULLD" "DRRUULLLDRDLUURDDLDRULUR" 
+
+
+def gen_picture():
+    tiles = []
+    tile_map = {}
+    shift_map = {}
+    L = 1
+    for i in range(15):
+        square = Square(side_length = L, fill_color = BLUE, fill_opacity = 1, color = GRAY)
+        label = Tex(str(i+1)).move_to(square.get_center())
+        tile = Group(square, label)
+        tiles.append(tile)
+        shift_map[tile] = np.array([0, 0])
+        tile_map[(i // 4, i%4)] = tile
+
+    tiles = Group(*tiles).arrange_in_grid(rows = 4, cols = 4, buff= MED_SMALL_BUFF)
+
+    border = Square(side_length=tiles.width + 0.3, color = GRAY)
+
+    Group(tiles, border).shift(1*DOWN)
+
+    # a few random moves
+    pos = (3, 3)
+    starting_pos = (2,2)
+    NUM_MOVES = len(moves_seq)
+    anims = []
+
+    for i in range(NUM_MOVES):
+        match moves_seq[i]:
+            case 'D': neighbor = (pos[0] - 1, pos[1])
+            case 'U': neighbor = (pos[0] + 1, pos[1])
+            case 'L': neighbor = (pos[0], pos[1] + 1)
+            case 'R': neighbor = (pos[0], pos[1] - 1)
+
+        print(i, neighbor)
+        tile_map[neighbor].shift(
+            (pos[0] - neighbor[0])*(L + MED_SMALL_BUFF)*DOWN + (pos[1] - neighbor[1])*(L + MED_SMALL_BUFF)*RIGHT 
+        )
+        shift_map[tile_map[neighbor]][0] -= (pos[0] - neighbor[0])
+        shift_map[tile_map[neighbor]][1] -= (pos[1] - neighbor[1])
+
+        anims.append((
+            tile_map[neighbor], 
+            -(pos[0] - neighbor[0])*(L + MED_SMALL_BUFF)*DOWN + -(pos[1] - neighbor[1])*(L + MED_SMALL_BUFF)*RIGHT 
+        ))
+
+        tile_map[pos] = tile_map[neighbor]
+        del tile_map[neighbor]
+
+        pos = neighbor
+
+    return Group(border, tiles)
+
+
+
 class Puzzle(Scene):
     def construct(self):
         default()
-        self.next_section(skip_animations=True)
+        self.next_section(skip_animations=False)
         # As a small bonus, I want to give you at least one other application of the A* algorithm, so that you can appreciate that it is not just about finding paths in maps. You see, maps are perhaps not the most typical A* application, since the real algorithms in map applications are using many, many other tricks besides A*. A more authentic application is solving puzzles where your graph represents different states of a puzzle and transitions between them. 
 
         # This part is going to be a bit faster, so if you are not used to thinking about graphs representing state spaces,  I recommend you to watch this recent amazing video by Tom Sláma, who explains how they work in his video. 
@@ -42,25 +99,16 @@ class Puzzle(Scene):
         # a few random moves
         pos = (3, 3)
         starting_pos = (2,2)
-        NUM_MOVES = 10
+        NUM_MOVES = len(moves_seq)
         anims = []
-        forbidden_pos = (-1, -1)
-        i = 0
-        while(i < NUM_MOVES):
-            neighbors = []
-            if pos[0] > 0:
-                neighbors.append((pos[0] - 1, pos[1]))
-            if pos[0] < 3:
-                neighbors.append((pos[0] + 1, pos[1]))
-            if pos[1] > 0:
-                neighbors.append((pos[0], pos[1] - 1))
-            if pos[1] < 3:
-                neighbors.append((pos[0], pos[1] + 1))
 
-            if forbidden_pos in neighbors:
-                neighbors.remove(forbidden_pos)
+        for i in range(NUM_MOVES):
+            match moves_seq[i]:
+                case 'D': neighbor = (pos[0] - 1, pos[1])
+                case 'U': neighbor = (pos[0] + 1, pos[1])
+                case 'L': neighbor = (pos[0], pos[1] + 1)
+                case 'R': neighbor = (pos[0], pos[1] - 1)
 
-            neighbor = random.choice(neighbors)
             print(i, neighbor)
             tile_map[neighbor].shift(
                 (pos[0] - neighbor[0])*(L + MED_SMALL_BUFF)*DOWN + (pos[1] - neighbor[1])*(L + MED_SMALL_BUFF)*RIGHT 
@@ -76,12 +124,7 @@ class Puzzle(Scene):
             tile_map[pos] = tile_map[neighbor]
             del tile_map[neighbor]
 
-            forbidden_pos = pos
             pos = neighbor
-
-            i += 1
-            if i == NUM_MOVES and (pos != starting_pos):
-                i -= 1
 
         print(shift_map)
 
@@ -120,7 +163,7 @@ class Puzzle(Scene):
 
         neighboring_pictures = [picture.copy(), picture.copy(), picture.copy(), picture.copy()]
 
-        for i, (shift, list_pos) in enumerate(zip([(-1, 0), (0, -1), (0, 1), (1, 0)], [11, 9, 8, 15])):
+        for i, (shift, list_pos) in enumerate(zip([(-1, 0), (0, -1), (0, 1), (1, 0)], magic)):
             neighbor_pos = (starting_pos[0] + shift[0], starting_pos[1] + shift[1])
 
             neighboring_pictures[i][0][list_pos-1].shift(
@@ -196,10 +239,10 @@ class Puzzle(Scene):
         # One simple heuristic is to look at each tile separately and compute how many moves we would need to put it in its place. Like, we need … moves to put the tile 1 to the final configuration, … moves to put the tile 2 and so on. If we sum up all these numbers, we get a lower bound on the number of moves we need to solve the whole puzzle. 
 
         self.play(
-            picture.animate.shift(2*LEFT)
+            picture.animate.shift(3*LEFT)
         )
 
-        tex_our_heuristic = Tex(r"Our heuristic = ").scale(0.7).next_to(picture, RIGHT, buff = 1)
+        tex_our_heuristic = Tex(r"Our heuristic = ").next_to(picture, RIGHT, buff = 1)
         num = Integer(0).next_to(tex_our_heuristic, RIGHT, 0.3)
 
         self.play(
@@ -241,7 +284,7 @@ class Puzzle(Scene):
             self.wait()
 
 
-        tex_actual = Tex("Actual distance = ??").next_to(tex_our_heuristic, DOWN).align_to(tex_our_heuristic, LEFT)
+        tex_actual = Tex("Actual distance = 34").next_to(tex_our_heuristic, DOWN).align_to(tex_our_heuristic, LEFT)
         self.play(FadeIn(tex_actual))
         self.wait()
         self.play(
@@ -270,10 +313,10 @@ class Puzzle(Scene):
         ]
         self.play(
             Succession(
-                FadeIn(yeses[0]),
-                FadeIn(yeses[3]),
                 FadeIn(yeses[2]),
                 FadeIn(yeses[1]),
+                FadeIn(yeses[0]),
+                FadeIn(yeses[3]),
             )
         )        
         self.wait()
@@ -305,26 +348,24 @@ class Puzzle(Scene):
 class Puzzle2(RubikScene):
     def construct(self):
         default()
-        picture = Circle(1)
-        picture.generate_target()
-        picture.target.scale(0.5)
+        picture = gen_picture().scale(0.5)
 
         background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE)
-        graph = Group(background, europe_boundary, G).move_to(0.5 * config.frame_width/2 * LEFT + 0.5 * config.frame_height/2 * UP).scale(0.2)
+        graph = Group(background, europe_boundary).move_to(0.5 * config.frame_width/2 * LEFT + 0.5 * config.frame_height/2 * UP).scale(0.2)
 
         rubik_cube = RubiksCube(cubie_size=0.5)
         Tex.set_default(font_size = 30)
         
         table = Group(
             Dot(), Tex("Maps").scale(2), Tex("15 puzzle").scale(2), Tex("Rubik's cube").scale(2),
-            Dot(), graph, picture.target, rubik_cube,
+            Dot(), graph, picture, rubik_cube,
             Tex("Heuristic: "), Tex("Air distance"), Tex("sum of individual distances"), Tex(r"Heuristic(u) = min(dist(u, target), diameter/2)\\ a.k.a. meet in the middle if you know diameter").scale(0.7),
             Tex("Speedup: "), Tex(r"$4\times$"), Tex(r"$10^6\times$"), Tex(r"$10^{10}\times$")
         ).arrange_in_grid(rows = 4, cols = 4).move_to(ORIGIN)
 
         self.play(
             *[FadeIn(t) for t in table[1:3]],
-            FadeIn(graph), MoveToTarget(picture),
+            FadeIn(graph), FadeIn(picture),
             *[FadeIn(t) for t in table[8:11]],
             *[FadeIn(t) for t in table[12:15]],
         )

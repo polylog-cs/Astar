@@ -181,14 +181,31 @@ class Consistency(Scene):
         self.wait()
         
 
+class Practice(Scene):
+    def construct(self):
+        default()
+
+        img = ImageMobject("img/practice.png").scale_to_fit_height(8)
+        tex_d = Tex("Dijkstra: $\sim 200\,000$ nodes").move_to(4*LEFT + 3*UP)
+        tex_a = Tex("A*: $\sim 47\,000$ nodes").move_to(0*RIGHT).shift(1*UP)
+        rec_d = SurroundingRectangle(tex_d, fill_color = config.background_color, fill_opacity = 1, color = config.background_color)
+        rec_a = SurroundingRectangle(tex_a, fill_color = config.background_color, fill_opacity = 1, color = config.background_color)
+        tex_credit = Tex(r"""{100cm}https://public.opendatasoft.com/explore/dataset/europe-road/export/?refine.icc=BE""", 
+        tex_environment='minipage').scale(0.5).to_corner(DL, buff = 0.1)
+        tex_credit2 = Tex(r"https://geojson.io/").scale(0.5).to_corner(DR, buff = 0.1)
+        #Group(tex_credit, tex_credit2).arrange_in_grid(cols = 1, cell_alignment=LEFT).to_corner(DL)
+
+        self.add(img,  rec_d, rec_a, tex_d, tex_a,tex_credit, tex_credit2)
+
 class Negative(Scene):
     def construct(self):
         default()
         tex1 = Tex("Shortest path in graphs with negative edges?").shift(1*UP)
         tex2 = Tex(r"{{Bellman-Ford (1950's): }}{{time $O(mn)$").scale(0.7)
+        tex25 = Tex(r"{{Gabow-Tarjan (1989): }}{{time $O(m\sqrt{n} \cdot \text{polylog}(n) )$").scale(0.7)
         tex3 = Tex(r"{{Bernstein, Nanongkai, Wulff-Nilsen (2022): }}{{time $O((m+n) \cdot \text{polylog}(n))$").scale(0.7)
         tex4 = Tex(r"A simpler application in video description. ").scale(0.4).to_edge(DOWN)
-        Group(tex2[0], tex2[1], tex3[0], tex3[1]).arrange_in_grid(rows = 2, cols = 2, cell_alignment=LEFT).next_to(tex1, DOWN, buff = 1)
+        Group(tex2[0], tex2[1], tex25[0], tex25[1], tex3[0], tex3[1]).arrange_in_grid(rows = 3, cols = 2, cell_alignment=LEFT).next_to(tex1, DOWN, buff = 1)
 
         self.play(
             FadeIn(tex1)
@@ -197,6 +214,11 @@ class Negative(Scene):
         
         self.play(
             FadeIn(tex2)
+        )
+        self.wait()
+
+        self.play(
+            FadeIn(tex25)
         )
         self.wait()
         

@@ -19,7 +19,7 @@ struct BoardState {
   // Values are stored row-by-row, 0 representing an empty cell.
   //std::vector<uint8_t> values;
 
-    unsigned long long values;
+  unsigned long long values;
 
   bool operator<(const BoardState& other) const {
     return values < other.values;
@@ -29,25 +29,25 @@ struct BoardState {
     return values == other.values;
   }
 
-    BoardState(vector<int> perm){
-        values = 0;
+  BoardState(vector<int> perm){
+    values = 0;
     for (int i = 0; i < BOARD_SIZE; ++i) {
       for (int j = 0; j < BOARD_SIZE; ++j) {
         set_cell(i, j, perm[i*BOARD_SIZE + j]);
       }
     }     
-    }
+  }
 
   // Returns the value of the cell in the given row and column
   uint8_t cell(int row, int col) const {
     return  ( values >> ( (row * BOARD_SIZE + col)*4 ) ) % 16;
   }
 
-    void set_cell(int row, int col, int val){
-        int cur = cell(row, col);
-        values -= ( (long long ) cur) << ( (row * BOARD_SIZE + col)*4 );
-        values += ( (long long ) val) << ( (row * BOARD_SIZE + col)*4 );
-    }
+  void set_cell(int row, int col, int val){
+    int cur = cell(row, col);
+    values -= ( (long long ) cur) << ( (row * BOARD_SIZE + col)*4 );
+    values += ( (long long ) val) << ( (row * BOARD_SIZE + col)*4 );
+  }
 
   void swapCells(int row1, int col1, int row2, int col2) {
     int val1 = cell(row1, col1);
@@ -106,18 +106,18 @@ struct BoardState {
 
 //https://cp-algorithms.com/others/15-puzzle.html#implementation
 bool parity(const BoardState& a){
-    int inv = 0;
-    vector<int> perm = a.get_permutation();
-    for (int i=0; i<16; ++i)
-        if (perm[i])
-            for (int j=0; j<i; ++j)
-                if (perm[j] > perm[i])
-                    ++inv;
-    for (int i=0; i<16; ++i)
-        if (perm[i] == 0)
-            inv += 1 + i / 4;
+  int inv = 0;
+  vector<int> perm = a.get_permutation();
+  for (int i=0; i<16; ++i)
+    if (perm[i])
+      for (int j=0; j<i; ++j)
+        if (perm[j] > perm[i])
+            ++inv;
+  for (int i=0; i<16; ++i)
+    if (perm[i] == 0)
+      inv += 1 + i / 4;
 
-    return inv & 1;
+  return inv & 1;
 }
 
 /**
@@ -221,35 +221,50 @@ int main(int argc, char* argv[]) {
     9, 12, 13, 15
   });
 
+  // BoardState start_video({
+  //   5, 2, 8, 3, 
+  //   9, 6, 7, 4, 
+  //   13, 1, 0, 11, 
+  //   14, 15, 10, 12
+  // });
+
+  BoardState start_video({
+    5, 2, 7, 8, 
+    13, 9, 4, 3, 
+    14, 1, 11, 12, 
+    15, 10, 6, 0
+  });
+
   // This state should be solvable in 26 steps.
 
   BoardState goal({
-    0, 1, 2, 3,
-    4, 5, 6, 7,
-    8, 9, 10, 11,
-    12, 13, 14, 15
+    1, 2, 3, 4,
+    5, 6, 7, 8,
+    9, 10, 11, 12,
+    13, 14, 15, 0
   });
 
-
+dijkstra(start_video, goal, true);
+cout << aStarHeuristic(start_video, goal);
+return 0;
     int max_it = 10;
     int num = 0;
     mt19937 g(0); 
     for(int it = 0; it < max_it; ++it){
-        // random starting state
+      // random starting state
+      vector<int> perm = vector<int>(16, 0);
+      for(int i = 0; i < 16; ++i){perm[i] = i;}
+      do{
+          shuffle(perm.begin(), perm.end(), g);
+      }while(parity(goal) != parity(BoardState(perm)));
 
-        vector<int> perm = vector<int>(16, 0);
-        for(int i = 0; i < 16; ++i){perm[i] = i;}
-        do{
-            shuffle(perm.begin(), perm.end(), g);
-        }while(parity(goal) != parity(BoardState(perm)));
+      BoardState start_random(perm);
 
-        BoardState start_random(perm);
-
-        start_random.debugPrint();
-        num += dijkstra(start_random, goal, true);
+      start_random.debugPrint();
+      num += dijkstra(start_random, goal, true);
 
     }
 
-    cout << "average number of explored nodes: " << (double)num / max_it << endl;
+  cout << "average number of explored nodes: " << (double)num / max_it << endl;
   return 0;
 }
