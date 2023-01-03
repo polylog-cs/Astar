@@ -340,7 +340,7 @@ class CustomGraph(Graph):
                 Succession(
                     Wait(start_time * speed),
                     AnimationGroup(
-                        Create(line, rate_functions = "linear"), 
+                        Create(line, rate_function = linear), 
                         run_time = ( end_time - start_time ) * speed,
                     )
                 )
