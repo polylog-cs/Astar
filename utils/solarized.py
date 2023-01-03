@@ -36,6 +36,7 @@ GRAY = BASE00
 GREY = BASE00
 
 text_color = GRAY
+TEXT_COLOR = GRAY
 DALLE_ORANGE = r"#%02x%02x%02x" % (254, 145, 4)
 
 # whenever more colors are needed
@@ -46,4 +47,8 @@ rainbow = [RED, MAGENTA, VIOLET, BLUE, CYAN, GREEN]
 from manim import config
 
 config.background_color = BASE2
+BACKGROUND_COLOR_LIGHT = BASE2
+BACKGROUND_COLOR_DARK = BASE02
+BACKGROUND_COLOR = BACKGROUND_COLOR_LIGHT
+
 config.max_files_cached = 1000

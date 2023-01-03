@@ -127,6 +127,12 @@ class CustomGraph(Graph):
                 )
             )
 
+    def disable_colors(self):
+        for e in self.edges:
+            self.edges[e].add_updater(
+                lambda mob: mob.set_color(GRAY)
+            )
+
 
     def setup_potentials(self, potentials = {}, rate = 1):
         # updater: edge_length = original_edge_length + potential(v) - potential(u)
@@ -261,20 +267,16 @@ class CustomGraph(Graph):
         predecessors = {}
 
         mover_anims = []
+        node_anims = []
+        red_nodes = []
         while not q.empty():
             (dist, node, predecessor) = q.get()
             if not node in distances:
                 distances[node] = dist
                 predecessors[node] = predecessor
 
-                if predecessor != -1:
-                    pass
-                    # all_anims.append(
-                    #     Succession(
-                    #         Wait(dist * speed),
-                    #         self.edges[(predecessor, node)].animate.set_color(RED)
-                    #     )
-                    # )
+                node_anims.append((dist, node))
+                
 
                 for neighbor in G[node]:
                     if not neighbor in distances:
@@ -283,7 +285,6 @@ class CustomGraph(Graph):
                         new_dist = dist + self.edge_weights_vals[edge].get_value() + self.vertex_potentials[neighbor].get_value() - self.vertex_potentials[node].get_value()
                         q.put((new_dist, neighbor, node))
 
-                        mover = Circle(radius = 0.1, color = RED).move_to(self.vertices[node].get_center())
                         mover_anims.append(
                             (
                                 self.vertices[node].get_center(), 
@@ -305,6 +306,17 @@ class CustomGraph(Graph):
             shortest_path_edges[0].append((pred, node))
             shortest_path_edges[1].append((node, pred))
             node = pred
+
+        for anim in node_anims:
+            (dist, node) = anim
+            if dist <= distances[end_node]:
+                red_nodes.append(node)
+                all_anims.append(
+                    Succession(
+                        Wait(dist * speed),
+                        self.vertices[node].animate.set_color(RED)
+                    )
+                )
 
         all_lines = {}
         for anim in mover_anims:
@@ -328,7 +340,7 @@ class CustomGraph(Graph):
                 Succession(
                     Wait(start_time * speed),
                     AnimationGroup(
-                        Create(line, rate_functions = "linear"), # TODO na zacatku je wait
+                        Create(line, rate_functions = "linear"), 
                         run_time = ( end_time - start_time ) * speed,
                     )
                 )
@@ -345,7 +357,8 @@ class CustomGraph(Graph):
             all_lines,
             shortest_path_nodes,
             shortest_path_edges[0] + shortest_path_edges[1],
-            distances
+            distances,
+            red_nodes
         )
         
 

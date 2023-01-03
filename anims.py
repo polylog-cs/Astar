@@ -6,7 +6,39 @@ from manim import config as global_config
 from utils.util import *
 from utils.util_graph import *
 
+class Thanks(Scene):
+    def construct(self):#TODO správný lidi
+        s = [
+            "Big thanks to",
+            "-- 3blue1brown and Manim Community for Manim",
+            "-- csha, Jindra Dušek, Martin Dvořák, Bernhard Haeupler, Florian Haeupler,",
+            "Richard Hladík, Filip Hlásek, Aranka Hrušková, Yannic Maus, Jan Petr, ",
+            "Hanka Rozhoňová, Jukka Suomela, Jan Volhejn, Vojtěch Volhejn, ",
+            "Tung Anh Vu, Vilas Winstein",
+            "See video description for links and some more related math. :)",
+        ]
+        t = [
+            Tex(ss, color = text_color) for ss in s
+        ]
+        # for i in range(3, len(t)):
+        #     t[i].scale(0.7)
+        t[0].move_to(5*LEFT + 3*UP)
+        t[1].next_to(t[0], DOWN).align_to(t[0], LEFT)
+        t[2].next_to(t[1], DOWN).align_to(t[0], LEFT)
+        t[3].scale(0.7).next_to(t[2], DOWN).align_to(t[0], LEFT)
+        t[4].scale(0.7).next_to(t[3], DOWN).align_to(t[0], LEFT)
+        t[5].scale(0.7).next_to(t[4], DOWN).align_to(t[0], LEFT)
+        t[6].scale(0.7).next_to(t[5], DOWN).align_to(t[0], LEFT)
+        t[7].move_to(t[5].get_center()[1]*UP + 2*DOWN)
 
+        self.play(
+            *[FadeIn(tt) for tt in t]
+        )
+        self.wait()
+        self.play(
+            *[FadeOut(o) for o in self.mobjects]
+        )
+        self.wait()
 
 class Intro(Scene):
     def construct(self):
@@ -21,7 +53,7 @@ class Intro(Scene):
         
         # Dijkstra
         G.set_new_potentials(G.gen_zero_potentials())
-        dijkstra_headline = Tex("{{Dijkstra's}}{{ algorithm}}", color = GRAY).scale(1.5).to_corner(LEFT + UP)
+        dijkstra_headline = tex_dijkstra_headline()
         self.play(FadeIn(dijkstra_headline))
         self.wait()
         tex_rome = rome_tex_name(G)
@@ -32,7 +64,9 @@ class Intro(Scene):
         )
         self.wait()
 
-        anims, lines, sp_nodes, sp_edges, _ = G.run_dijkstra(0, 1, 1)
+        for v in G.vertices.values():
+            v.save_state()
+        anims, lines, sp_nodes, sp_edges, _, red_nodes = G.run_dijkstra(0, 1, 1)
         self.play(Flash(G.vertices[PRAGUE], color = RED))
         self.play(
             anims
@@ -41,6 +75,7 @@ class Intro(Scene):
         self.wait()
         self.play(
             *[FadeOut(line) for (edge, line) in lines.items() if edge not in sp_edges],
+            *[dot.animate.restore() for (v, dot) in G.vertices.items() if v not in sp_nodes]
         )
         self.wait()
 
@@ -53,6 +88,7 @@ class Intro(Scene):
 
         self.play(
             *[FadeIn(line) for (edge, line) in lines.items() if edge not in sp_edges],
+            *[G.vertices[dot].animate.set_color(RED) for dot in red_nodes],
             FadeIn(circle)
         )
         self.wait()
@@ -60,13 +96,16 @@ class Intro(Scene):
         
         self.play(
             FadeOut(circle),
-            *[FadeOut(line) for line in lines.values()]
+            *[FadeOut(line) for line in lines.values()],
+            *[dot.animate.restore() for dot in G.vertices.values()],
         )
         self.wait()
-        
 
-        a_headline = Tex("{{A*}}{{ algorithm}}", color = GRAY).scale(1.5).to_corner(LEFT + UP)
-        self.play(Transform(dijkstra_headline, a_headline))
+        a_headline = tex_astar_headline()
+        self.play(
+            Transform(dijkstra_headline[0], a_headline[0]),
+            Transform(dijkstra_headline[1], a_headline[1])
+            )
 
         #A*
 
@@ -81,8 +120,11 @@ class Intro(Scene):
         self.wait()
 
         # run A*
+
+        G.disable_heights()
+        G.disable_colors()
         G.set_new_potentials(G.gen_air_potentials(ROME))
-        anims, lines, sp_nodes, sp_edges, _ = G.run_dijkstra(0, 1, 3)
+        anims, lines, sp_nodes, sp_edges, _, red_nodes = G.run_dijkstra(0, 1, 3)
         self.play(Flash(G.vertices[PRAGUE], color = RED))
         self.play(
             anims

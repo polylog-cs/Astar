@@ -258,7 +258,7 @@ class Chapter22(ThreeDScene):
         self.next_section(skip_animations=True)
 
         background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False, rate = 0.25)
-        _, _, _, _, distances = G.run_dijkstra(ROME, PRAGUE, 1)
+        _, _, _, _, distances, _ = G.run_dijkstra(ROME, PRAGUE, 1)
 
 
         self.add(background, europe_boundary, G)
@@ -313,7 +313,9 @@ class Chapter22(ThreeDScene):
 
         # So it looks like we are done! We found a formula for the best possible potential that satisfies both requirements on our list! Or are we still missing something? Well, let’s see what would happen if we apply the potential reweighting trick with this potential and then run Dijkstra’s algorithm on the new graph. You can see that the algorithm simply walks along the shortest path to Rome and it doesn’t even bother exploring anything else. Amazing!
 
-        anims, lines, sp_nodes, sp_edges, _ = G.run_dijkstra(PRAGUE, ROME, 100)
+        for v in G.vertices.values():
+            v.save_state()
+        anims, lines, sp_nodes, sp_edges, _, red_nodes = G.run_dijkstra(PRAGUE, ROME, 100)
         self.play(Flash(G.vertices[PRAGUE], color = RED))
         self.play(anims)
         self.play(Flash(G.vertices[ROME], color = RED))
@@ -340,6 +342,7 @@ class Chapter22(ThreeDScene):
         # )
         self.play(
             *[FadeOut(l) for l in lines.values()],
+            *[G.vertices[node].animate.restore() for node in red_nodes],
             *[G.vertex_potentials[v].animate.set_value(0) for v in G.vertices.keys()],
             FadeOut(tex_best_pot),
         )
@@ -459,7 +462,7 @@ class Chapter22(ThreeDScene):
 
         # Let’s see what happens if we plug in this potential into our A* algorithm. We start with the original graph, then we elevate every node to appropriate height, and then we run Dijkstra. [strauss?]
 
-        anims, lines, sp_nodes, sp_edges, _ = G.run_dijkstra(PRAGUE, ROME, 1)
+        anims, lines, sp_nodes, sp_edges, _, _ = G.run_dijkstra(PRAGUE, ROME, 1)
         self.play(Flash(G.vertices[PRAGUE], color = RED))
         self.play(anims)
         self.play(Flash(G.vertices[ROME], color = RED))
@@ -484,6 +487,7 @@ class AstarBeautiful(ThreeDScene):
             run_time=1,
         )
         
+        G.disable_colors()
         air_potentials = G.gen_air_potentials(ROME)
         self.move_camera(
             theta= -140 * DEGREES,
@@ -497,7 +501,7 @@ class AstarBeautiful(ThreeDScene):
         )
         self.wait()
 
-        anims, lines, sp_nodes, sp_edges, _ = G.run_dijkstra(PRAGUE, ROME, 1)
+        anims, lines, sp_nodes, sp_edges, _, _ = G.run_dijkstra(PRAGUE, ROME, 1)
         self.play(Flash(G.vertices[PRAGUE], color = RED))
         self.move_camera(
             theta= -60 * DEGREES,

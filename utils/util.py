@@ -56,117 +56,6 @@ SCALE_EUROPE = 1.25
 def clipart_arrow():
     return ImageMobject("img/arrow.png").scale_to_fit_height(0.7)
 
-def clipart_house(color = RED, height = 1, z_index = 0):
-    pnts = [
-        np.array([232.535, 333.808, 0.0]),
-        np.array([277.698, 333.811, 0.0]),
-        np.array([277.387, 373.503, 0.0]),
-        np.array([318.11, 373.566, 0.0]),
-        np.array([318.057, 333.881, 0.0]),
-        np.array([363.215, 333.935, 0.0]),
-        np.array([362.703, 419.758, 0.0]),
-        np.array([368.717, 425.367, 0.0]),
-        np.array([379.969, 415.454, 0.0]),
-        np.array([390.258, 426.885, 0.0]),
-        np.array([297.362, 509.816, 0.0]),
-        np.array([256.582, 472.796, 0.0]),
-        np.array([256.626, 497.065, 0.0]),
-        np.array([232.588, 497.017, 0.0]),
-        np.array([232.899, 451.371, 0.0]),
-        np.array([204.978, 426.922, 0.0]),
-        np.array([215.11, 415.777, 0.0]),
-        np.array([225.569, 425.578, 0.0]),
-        np.array([232.235, 419.834, 0.0]),
-        np.array([232.549, 333.833, 0.0]),
-    ]
-
-    house = Polygon(
-        *pnts,
-        color = color,
-        fill_color = color,
-		fill_opacity = 1,
-        z_index = z_index
-    ).move_to(
-        0*DOWN
-    ).scale_to_fit_height(
-        height
-    )
-
-    return house   
-
-def clipart_icon(color = BLUE, height = 1, z_index = 0):
-    pnts = [
-        np.array([407.837, 313.233, 0.0]),
-        np.array([340.843, 431.234, 0.0]),
-        np.array([297.995, 558.503, 0.0]),
-        np.array([253.986, 431.689, 0.0]),
-        np.array([187.414, 311.624, 0.0]),
-    ]
-
-    icon = ArcPolygon(
-        *pnts,
-        color = color,
-        arc_config = [
-            { 'radius': 119.256, 'color': color},
-            { 'radius': 70.9444, 'color': color},
-            { 'radius': 70.9444, 'color': color},
-            { 'radius': 119.256, 'color': color},
-            { 'radius': 216.488, 'color': color},
-
-        ],
-        fill_color = color,
-		fill_opacity = 1,
-        z_index = z_index
-    ).move_to(
-        0*DOWN
-    ).scale_to_fit_height(
-        height
-    )
-
-    return icon
-
-def clipart_bubble(pos, scale = 1.0, color = text_color, length_scale = 1):
-    scale = scale / 200.0
-    pos = np.array(pos) - np.array([489.071, 195.644, 0.0])*scale
-    ret_objects = []
-
-    c1 = Circle(
-        radius = 28.5689 * scale,
-        color = color
-    ).move_to(np.array([489.071, 195.644, 0.0])*scale).shift(pos + 0.3*UP)
-    print(c1.get_center())
-
-    c2 = Circle(
-        radius = 39.7392 * scale,
-        color = color
-    ).move_to(np.array([409.987, 274.728, 0.0])*scale).shift(pos + 0.15*UP)
-    ret_objects += [c1, c2]
-
-    pnts = [
-        (373.367*RIGHT +  366.776 * UP) * scale + pos,
-        (503.717*RIGHT +  453.873 * UP) * scale + pos,
-        (464.612*RIGHT +  613.847 * UP) * scale + pos,
-        (340.78*RIGHT +  643.472 * UP) * scale + pos,
-        (131.628*RIGHT +  596.072 * UP) * scale + pos,
-        (174.288*RIGHT +  388.106 * UP) * scale + pos,
-    ]
-
-    center = 0*LEFT
-    for i in range(len(pnts)):
-        pnts[i] += (length_scale - 1)*(pnts[i] - pnts[0])[0]*RIGHT
-        center += pnts[i]
-    center /= len(pnts)
-
-    angles = np.array([120, 170, 120, 120, 180, 120])*1.5707963267/90.0
-
-
-    for i in range(len(pnts)):
-        ret_objects.append(
-            ArcBetweenPoints(pnts[i], pnts[(i+1)%len(pnts)], angle = angles[i], color = color)
-        )
-
-    return ret_objects, center
-
 def clipart_yes_no_maybe(which, height):
     pnts_yes = [
         np.array([174.042, 364.002, 0]),
@@ -343,7 +232,7 @@ def clipart_yes_no_maybe(which, height):
     else:
         return Group(circle, clipart, small_circle)
 
-def clipart_map_europe(scale = 1, undirected = True, rate = 0.5, setup_potentials = True ):
+def clipart_map_europe(scale = 1, undirected = True, rate = 0.5, setup_potentials = True, weird_bug = False):
     pnts_europe = [
         np.array([404.246, 552.657, 0]),
         np.array([404.373, 545.566, 0]),
@@ -824,7 +713,7 @@ def clipart_map_europe(scale = 1, undirected = True, rate = 0.5, setup_potential
         return pnt/50.0 * scale
 
     #### boundary
-    background = Rectangle(fill_color = BASE02, fill_opacity = 1, height = 9, width =15, z_index = -100)
+    background = Rectangle(fill_color = BASE02, fill_opacity = 1, height = 9 + (100000 if weird_bug else 0), width =15 + (100000 if weird_bug else 0), z_index = -100)
     europe_boundary = Polygon(
         *[normalize(pnt) for pnt in pnts_europe],
         color = BASE02,
@@ -1021,7 +910,10 @@ def create_strategy(old=True, scale = 1):
 
 
 def basicDijkstraRun(scene, G, variant = None):
-    anims, lines, path_nodes, path_edges, _ = G.run_dijkstra(PRAGUE, ROME, 3)
+    anims, lines, path_nodes, path_edges, _, red_nodes = G.run_dijkstra(PRAGUE, ROME, 3)
+    for v in G.vertices.values():
+        v.save_state()
+
     scene.play(Flash(G.vertices[PRAGUE], color = RED))
     scene.play(
         anims
@@ -1031,10 +923,12 @@ def basicDijkstraRun(scene, G, variant = None):
 
     scene.play(
         *[FadeOut(line) for (edge, line) in lines.items() if edge not in path_edges],
+        *[G.vertices[node].animate.restore() for node in G.vertices.keys() if node not in red_nodes],
     )
     scene.wait()        
     scene.play(
         *[FadeOut(line) for (edge, line) in lines.items() if edge in path_edges],
+        *[G.vertices[node].animate.restore() for node in red_nodes],
     )
     scene.wait()
 
@@ -1069,24 +963,36 @@ def simple_reweighting(scene, G, edges_plus, edges_minus, change, weight, diff):
     scene.wait()
 
 def go_along_path(scene, G, path):
-    circ = Dot(radius = 0.05, color = RED, fill_opacity=1.0, fill_color = RED).move_to(G.edges[path[0]].get_start())
-    scene.play(FadeIn(circ))
     
+    cleaning_anims = []
     for i in range(len(path)):
-        scene.play(
-            circ.animate.move_to(G.edges[path[i]].get_end())
+        line = Line(
+            start = G.vertices[path[i][0]].get_center(), 
+            end = G.vertices[path[i][1]].get_center(),
+            color = RED,
         )
-        if i != len(path)-1:
-            scene.play(
-                circ.animate.move_to(G.edges[path[i+1]].get_start()),
-                run_time = 0.2
-            )
-    scene.play(FadeOut(circ))
+        scene.play(
+            Create(line)
+        )
+        cleaning_anims.append(FadeOut(line))
+
+    scene.play(AnimationGroup(*cleaning_anims))
     scene.wait()
 
 def rome_tex_name(G, scale = 1):
-    return Tex(r"Rome", color = RED).scale(scale).move_to(G.vertices[ROME].get_center() + 0.8*LEFT)
+    return Tex(r"Rome", color = RED).scale(scale).move_to(G.vertices[ROME].get_center() + 0.8*LEFT).set_z_index(100000)
 
 def prague_tex_name(G, scale = 1):
-    return Tex(r"Prague", color = RED).scale(scale).move_to(G.vertices[PRAGUE].get_center() + 0.5*LEFT + 0.3*UP)
+    tex = Tex(r"Prague", color = RED).scale(scale).move_to(G.vertices[PRAGUE].get_center() + 0.5*LEFT + 0.45 *UP)
+    back = SurroundingRectangle(tex, color = config.background_color, fill_opacity = 1, fill_color = config.background_color).shift(10000*DOWN)
+    return Group(back, tex).set_z_index(100000)
 
+def tex_dijkstra_headline():
+    tex = Tex("{{Dijkstra's}}{{ algorithm}}", color = GRAY).scale(1.5).to_corner(LEFT + UP)
+    back = SurroundingRectangle(tex, color = BACKGROUND_COLOR_DARK, fill_opacity = 1, fill_color = BACKGROUND_COLOR_DARK)
+    return Group(back, tex).set_z_index(100000)
+
+def tex_astar_headline():
+    tex = Tex("{{A*}}{{ algorithm}}", color = GRAY).scale(1.5).to_corner(LEFT + UP)
+    back = SurroundingRectangle(tex, color = BACKGROUND_COLOR_DARK, fill_opacity = 1, fill_color = BACKGROUND_COLOR_DARK)
+    return Group(back, tex).set_z_index(100000)
