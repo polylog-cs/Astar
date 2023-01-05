@@ -151,7 +151,7 @@ class Chapter21flat(Scene):
         background_formula = Rectangle(height = hheight, width = hwidth, 
         fill_color = config.background_color, fill_opacity = 1, color = RED)
         formula = Tex( r"New distance(Prague, Rome)").scale(text_scale)
-        formulaRHS = Tex("{{= }}{{Old distance(Prague, Rome)}}{{ + }}{{potential(Rome)}}{{ - }}{{potential(Prague)}}").scale(text_scale).next_to(formula[0], RIGHT, buff = 0.1)
+        formulaRHS = Tex(r"{{= }}{{Old distance(Prague, Rome)}}{{ $+$ }}{{potential(Rome)}}{{ $-$ }}{{potential(Prague)}}").scale(text_scale).next_to(formula[0], RIGHT, buff = 0.1)
         Group(formula, formulaRHS).move_to(background_formula.get_center())
         Group(formula, formulaRHS, background_formula).to_edge(DOWN, buff = 0.3)
 
@@ -209,15 +209,15 @@ class Chapter21flat(Scene):
 
 
 
-        necessary = Tex("Necessary for every node: potential(node) $\le$ distance(node, Rome)").move_to(background_formula.get_center()).shift(0.3*UP)
+        necessary = Tex(r"Necessary for every node: potential(node) $\le$ distance(node, Rome)").move_to(background_formula.get_center()).shift(0.3*UP)
 
         self.play(FadeIn(necessary))
         self.wait()
 
-        sufficient = Tex(r"{{Sufficient for every edge $u,v$: }}{{New length(u,v) $\ge$ 0}}").next_to(necessary, DOWN)
-        sufficient2 = Tex(r"{{Sufficient for every edge $u,v$: }}{{length(u,v) + potential(v) - potential(u) $\ge$ 0}}").move_to(sufficient.get_center())
-        sufficient23 = Tex(r"{{Sufficient for every edge $u,v$: }}{{length(u,v) }}{{+ }}{{potential(v) }}{{- }}{{potential(u) }}{{$\ge$ }}{{0}}").move_to(sufficient.get_center())
-        sufficient3 = Tex(r"{{Sufficient for every edge $u,v$: }}{{potential(u)}}{{ - }}{{potential(v) }}{{$\le$ }}{{length(u,v) }}").move_to(sufficient.get_center())
+        sufficient = Tex(r"{{Sufficient for every edge $u,v$: }}{{New length($u$,$v$) $\ge$ 0}}").next_to(necessary, DOWN)
+        sufficient2 = Tex(r"{{Sufficient for every edge $u,v$: }}{{length($u$,$v$) $+$ potential($v$) - potential($u$) $\ge$ $0$}}").move_to(sufficient.get_center())
+        sufficient23 = Tex(r"{{Sufficient for every edge $u,v$: }}{{length($u$,$v$) }}{{$+$ }}{{potential($v$) }}{{$-$ }}{{potential($u$) }}{{$\ge$ }}{{0}}").move_to(sufficient.get_center())
+        sufficient3 = Tex(r"{{Sufficient for every edge $u,v$: }}{{potential($u$)}}{{ $-$ }}{{potential($v$) }}{{$\le$ }}{{length($u$,$v$) }}").move_to(sufficient.get_center())
 
         self.play(FadeIn(sufficient))
         self.wait()
@@ -245,8 +245,6 @@ class Chapter21flat(Scene):
             FadeOut(necessary)
         )
         self.wait()
-
-
 
 
 class Chapter22(ThreeDScene):
@@ -298,7 +296,7 @@ class Chapter22(ThreeDScene):
         back = Rectangle(height = hheight, width = hwidth, color = RED, fill_color = config.background_color, 
         fill_opacity = 1).to_edge(DOWN, buff = 0.3)     
 
-        tex_best_pot = Tex(r"{{Best potential is: }}{{potential(u) = distance(u, Rome)}}", z_index = 100).move_to(back.get_center())
+        tex_best_pot = Tex(r"{{Best potential is: }}{{potential($u$) $=$ distance($u$, Rome)}}", z_index = 100).move_to(back.get_center())
 
 
         self.add_fixed_in_frame_mobjects(back, tex_best_pot)
@@ -355,16 +353,20 @@ class Chapter22(ThreeDScene):
         self.play(
             G.show_names(range(20)),
             G.show_names(range(22, N_CITIES)),
+            *[FadeOut(edge) for edge in G.edges.values()],
+            *[FadeOut(edge_weight) for edge_weight in G.edge_weights_objs.values()],
         )
         self.wait()
         
         self.play(
             G.hide_names(range(20)),
             G.hide_names(range(22, N_CITIES)),
+            *[FadeIn(edge) for edge in G.edges.values()],
+            *[FadeIn(edge_weight) for edge_weight in G.edge_weights_objs.values()],
         )
         self.wait()
 
-        tex_decent = Tex(r"{{Very decent potential: }}{{potential(u) = air distance(u, Rome)}}", z_index = 100).move_to(back.get_center()).shift(0.3*UP)
+        tex_decent = Tex(r"{{Very decent potential: }}{{potential($u$) $=$ air distance($u$, Rome)}}", z_index = 100).move_to(back.get_center()).shift(0.3*UP)
         air_distance = G.gen_air_potentials(ROME)
         
         self.add_fixed_in_frame_mobjects(tex_decent)
@@ -430,7 +432,7 @@ class Chapter22(ThreeDScene):
         )
         self.wait()
 
-        tex_inequality = Tex(r"air distance(u, Rome) $\le$ air distance(v, Rome) + air distance(u,v) \\ $\le$ air distance(v, Rome) + length(u,v) ", 
+        tex_inequality = Tex(r"air distance(u, Rome) $\le$ air distance(v, Rome) $+$ air distance(u,v) \\ $\le$ air distance(v, Rome) $+$ length(u,v) ", 
         z_index = 100).move_to(back.get_center()).next_to(tex_decent, DOWN)
         self.add_fixed_in_frame_mobjects(ticks[1], tex_inequality)
         self.play(
@@ -440,7 +442,7 @@ class Chapter22(ThreeDScene):
         )
         self.wait()
 
-        tex_formula = Tex(r"potential($u$) = $\sqrt{(u.x - \text{Rome}.x)^2 + (u.y - \text{Rome}.y)^2}$", 
+        tex_formula = Tex(r"potential($u$) $=$ $\sqrt{(u.x $-$ \text{Rome}.x)^2 $+$ (u.y $-$ \text{Rome}.y)^2}$", 
         z_index = 100).next_to(tex_decent, DOWN).shift(0.1*DOWN)
         self.add_fixed_in_frame_mobjects(ticks[3], tex_formula)
         self.play(

@@ -713,7 +713,7 @@ def clipart_map_europe(scale = 1, undirected = True, rate = 0.5, setup_potential
         return pnt/50.0 * scale
 
     #### boundary
-    background = Rectangle(fill_color = BASE02, fill_opacity = 1, height = 9 + (100000 if weird_bug else 0), width =15 + (100000 if weird_bug else 0), z_index = -100)
+    background = Rectangle(fill_color = BASE02, fill_opacity = 1, height = 9 + (100 if weird_bug else 0), width =15 + (100 if weird_bug else 0), z_index = -100)
     europe_boundary = Polygon(
         *[normalize(pnt) for pnt in pnts_europe],
         color = BASE02,

@@ -111,11 +111,13 @@ class Intro(Scene):
 
         # show city positions
         self.play(
-            G.show_names(range(N_CITIES))
+            G.show_names(range(N_CITIES)),
+            *[FadeOut(edge) for edge in G.edges.values()],
         )
         self.wait()
         self.play(
-            G.hide_names(range(N_CITIES))
+            G.hide_names(range(N_CITIES)),
+            *[FadeOut(edge) for edge in G.edges.values()],
         )
         self.wait()
 
@@ -196,16 +198,16 @@ class Chapter11(MovingCameraScene):
             FadeIn(G),
         )
         self.wait()
-        self.play(
-            G.show_names(range(N_CITIES))
-        )
-        self.wait()
-        self.play(
-            G.hide_names(range(N_CITIES))
-        )
-        # for i in range(N_CITIES):
-        #     self.add(Tex(i).move_to(G.vertices[i].get_center()))
-        self.wait()
+        # self.play(
+        #     G.show_names(range(N_CITIES))
+        # )
+        # self.wait()
+        # self.play(
+        #     G.hide_names(range(N_CITIES))
+        # )
+        # # for i in range(N_CITIES):
+        # #     self.add(Tex(i).move_to(G.vertices[i].get_center()))
+        # self.wait()
 
         # We could now look at the implementation of Dijkstra’s algorithm and start coming up with all kinds of heuristics, but that’s exactly what we are not going to do. 
         # In my head, the biggest idea of A* is that we want to keep Dijsktra’s algorithm exactly the same and, instead, we will simply try to Change the weights on which we run the algorithm. 
@@ -779,8 +781,10 @@ class Chapter14(ThreeDScene):  # TODO check návaznost
 
         shft1 = 4*RIGHT
         shft2 = 7*LEFT
-        eq1 = Tex(r"$\nabla \times (\nabla \varphi) = 0$", color = PINK).to_edge(DOWN).to_edge(LEFT).shift(- shft1)
-        eq2 = Tex(r"$\oint_{u \rightarrow v} (\nabla \varphi) \cdot d\ell = \varphi(v) - \varphi(u)$", color = PINK).to_edge(DOWN).to_edge(RIGHT).shift(- shft2)
+        eq1 = Tex(r"$\nabla \times (\nabla \varphi) = 0$", color = RED).to_edge(DOWN).to_edge(LEFT).shift(- shft1)
+        eq2 = Tex(r"$\oint_{u \rightarrow v} (\nabla \varphi) \cdot d\ell = \varphi(v) - \varphi(u)$", color = RED).to_edge(DOWN).to_edge(RIGHT).shift(- shft2)
+        eq1 = Group(SurroundingRectangle(eq1, color = RED, fill_opacity = 1, fill_color = BACKGROUND_COLOR_LIGHT))
+        eq2 = Group(SurroundingRectangle(eq1, color = RED, fill_opacity = 1, fill_color = BACKGROUND_COLOR_LIGHT))
         self.add_fixed_in_frame_mobjects(eq1, eq2)
 
         self.play(

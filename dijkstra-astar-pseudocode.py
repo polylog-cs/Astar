@@ -1,39 +1,39 @@
 
+def bla:
+
+    A*
+
+    open_nodes = {start}
+    closed_nodes = {}
+
+    while open_nodes not empty:
+        cur_node = remove from open_nodes the one with min dist(start, node) + heuristic(node)
+
+        # open all neighbors
+        for neighbor in neighbors of cur_node:
+            if neighbor not in closed_nodes:
+                put neighbor in open_nodes
+
+        closed_nodes.add(cur_node)
 
 
-A*
 
-open_nodes = {start}
-closed_nodes = {}
+    Dijsktra with potentials
 
-while open_nodes not empty:
-    cur_node = remove from open_nodes the one with min dist(start, node) + heuristic(node)
+    open_nodes = {start}
+    closed_nodes = {}
 
-    # open all neighbors
-    for neighbor in neighbors of cur_node:
-        if neighbor not in closed_nodes:
-            put neighbor in open_nodes
+    while open_nodes not empty:
+        cur_node = remove from open_nodes the node minimizing dist(start, node) + potential(node) - potential(start)
 
-    closed_nodes.add(cur_node)
+        # open all neighbors
+        for neighbor in neighbors of cur_node:
+            if neighbor not in closed_nodes:
+                put neighbor in open_nodes, 
+                update its distance as:
+                    dist[neighbor] = min(dist[neighbor], dist[cur_node] + length(cur_node, neighbor) + potential(neighbor) - potential(cur_node))
 
-
-
-Dijsktra with potentials
-
-open_nodes = {start}
-closed_nodes = {}
-
-while open_nodes not empty:
-    cur_node = remove from open_nodes the node minimizing dist(start, node) + potential(node) - potential(start)
-
-    # open all neighbors
-    for neighbor in neighbors of cur_node:
-        if neighbor not in closed_nodes:
-            put neighbor in open_nodes, 
-            update its distance as:
-                dist[neighbor] = min(dist[neighbor], dist[cur_node] + length(cur_node, neighbor) + potential(neighbor) - potential(cur_node))
-
-    closed_nodes.add(cur_node)
+        closed_nodes.add(cur_node)
 
     
 
@@ -161,7 +161,7 @@ def Astar(G, start, end):
     return -1
 
 
-
+infinity = 100
 
 # A* pseudocode
 def Astar(G, start, end):
@@ -173,25 +173,27 @@ def Astar(G, start, end):
     # for edge in G.edges:
     #     edge.length += potential(edge[1]) - potential(edge[0])
 
-    #PART 3: Run Dijkstra
-    open_nodes = [start]
-    closed_nodes = []
+    #PART 3: Run Dijkstra 
+    boundary_nodes = {start} # this is priority queue in real implementation
     distances = {}
-    while open_nodes != []:
-        # always remove the currently closest node
-        cur_node = argmin(open_nodes, lambda node: distances[node] + potential(node) )
 
-        open_nodes.remove(cur_node)
-        closed_nodes.append(cur_node)
+    while boundary_nodes != []:
+        # always remove the currently closest node
+        cur_node = argmin(boundary_nodes, lambda node: distances[node] + potential(node) )
+
+        # bookkeeping
+        boundary_nodes.remove(cur_node)
         if cur_node == end:
             return distances[end]
+        
         # relax all neighbors
         for neighbor, edge_length in cur_node.neighbors:
-            distances[neighbor] = min(distances[neighbor], distances[cur_node] + edge_length)
-            if neighbor not in closed_nodes and neighbor not in open_nodes:
-                open_nodes.append(neighbor)
+            proposed_distance = distances[cur_node] + edge_length
+            if neighbor not in distances or distances[neighbor] > proposed_distance: 
+                distances[neighbor] = proposed_distance
+                boundary_nodes.add(neighbor)
                 
-    return -1
+    return infinity
 
 
 
