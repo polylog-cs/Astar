@@ -9,8 +9,9 @@ from utils.util_graph import *
 class Tom(ThreeDScene):
     def construct(self):
         default()
-        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False, rate = 0.3, weird_bug=True) # weird_bug = True
-        self.add(background, europe_boundary, G, *[G.vertex_height_lines[v] for v in range(N_CITIES)]) #*[G.edges[e] for e in G.edges.keys()])
+        self.camera.background_color = BASE02
+        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False, rate = 0.3, weird_bug=False) # weird_bug = True
+        self.add(europe_boundary, G, *[G.vertex_height_lines[v] for v in range(N_CITIES)]) #*[G.edges[e] for e in G.edges.keys()])
 
         self.move_camera(
             phi= 80 * DEGREES,
