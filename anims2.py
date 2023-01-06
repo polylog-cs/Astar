@@ -8,19 +8,23 @@ from utils.util import *
 from utils.util_graph import *
 
 hwidth = 14
-hheight = 1.7
+hheight = 1.4
 
+prop_buffer = 0.15
 
+shft = 2.7*RIGHT + 0.5*UP
+zoo = 0.9
 class Chapter21(ThreeDScene):
     def construct(self):
+        self.camera.background_color = BASE02
         Tex.set_default(font_size = 27)
         ThreeDPart = True
         default()
         self.next_section(skip_animations=True)
 
-        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
+        _, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
 
-        self.add(background, europe_boundary, G)
+        self.add(europe_boundary, G)
         self.add(
             *[e for e in G.edges.values()],
             *[v for v in G.vertices.values()],
@@ -30,17 +34,17 @@ class Chapter21(ThreeDScene):
             *[G.edge_weights_objs[e] for e in G.edges.keys()],
         )
 
-
         self.move_camera(
             phi=40 * DEGREES,
             run_time=0.5,
-            added_anims = [Group(background, europe_boundary, *G.vertices.values()).animate.shift(1*RIGHT + 0.5*UP)]
+            zoom = zoo,
+            added_anims = [Group(europe_boundary, *G.vertices.values()).animate.shift(shft)]
         )
     
         self.next_section(skip_animations=False)
 
 
-        prop_list = create_potential_list([0, 0, 0, 0]).to_corner(UL, buff = 0.3)
+        prop_list = create_potential_list([0, 0, 0, 0]).to_corner(UL, buff = prop_buffer)
         self.add_fixed_in_frame_mobjects(prop_list[0], prop_list[1])
         self.play(FadeIn(prop_list[0]), FadeIn(prop_list[1]))
 
@@ -78,25 +82,25 @@ class Chapter21(ThreeDScene):
         self.wait()
 
 
-        self.play(
-            G.vertex_potentials[6].animate.increment_value(5),
-            G.vertex_potentials[7].animate.increment_value(5),
-            G.vertex_potentials[8].animate.increment_value(5)
-        )
-        self.wait()
+        # self.play(
+        #     G.vertex_potentials[6].animate.increment_value(5),
+        #     G.vertex_potentials[7].animate.increment_value(5),
+        #     G.vertex_potentials[8].animate.increment_value(5)
+        # )
+        # self.wait()
 
 
-        for e in G.edges.keys():
-            print(G.edge_weights_vals[e].get_value())
+        # for e in G.edges.keys():
+        #     print(G.edge_weights_vals[e].get_value())
 
-        self.play(
-            *[G.edge_weights_objs[e].animate.scale(2) for e in G.edges.keys() if G.edge_weights_objs[e].get_value() < 0]
-        )
-        self.wait()
-        self.play(
-            *[G.edge_weights_objs[e].animate.scale(1.0/2) for e in G.edges.keys() if G.edge_weights_objs[e].get_value() < 0]
-        )
-        self.wait()
+        # self.play(
+        #     *[G.edge_weights_objs[e].animate.scale(2) for e in G.edges.keys() if G.edge_weights_objs[e].get_value() < 0]
+        # )
+        # self.wait()
+        # self.play(
+        #     *[G.edge_weights_objs[e].animate.scale(1.0/2) for e in G.edges.keys() if G.edge_weights_objs[e].get_value() < 0]
+        # )
+        # self.wait()
 
 
         self.play(
@@ -108,15 +112,26 @@ class Chapter21(ThreeDScene):
         self.wait()
 
 
-        self.play(
-            *[G.edge_weights_objs[e].animate.scale(2) for e in G.edges.keys() if G.edge_weights_objs[e].get_value() < 0]
-        )
-        self.wait()
-        self.play(
-            *[G.edge_weights_objs[e].animate.scale(1.0/2) for e in G.edges.keys() if G.edge_weights_objs[e].get_value() < 0]
-        )
-        self.wait()
+        groups = []
+        for e in G.edges.keys():
+            if G.edge_weights_objs[e].get_value() < 0:
+                groups.append(
+                    Group(
+                        SurroundingRectangle(G.edge_weights_objs[e], color = BACKGROUND_COLOR, buff = 0, fill_opacity = 1, fill_color = BACKGROUND_COLOR).set_z_index(99),
+                        G.edge_weights_objs[e].set_z_index(100),                        
+                    )
+                )
 
+        self.play(
+            *[gr.animate.scale(2) for gr in groups]
+        )
+        for g in groups:
+            self.remove(g[0])
+
+        self.play(
+            *[gr[1].animate.scale(1.0/2) for gr in groups]
+        )
+        self.wait()
 
         self.play(
             G.vertex_potentials[PRAGUE].animate.set_value(0),
@@ -152,13 +167,17 @@ class Chapter21flat(Scene):
         fill_color = config.background_color, fill_opacity = 1, color = RED)
         formula = Tex( r"New distance(Prague, Rome)").scale(text_scale)
         formulaRHS = Tex(r"{{= }}{{Old distance(Prague, Rome)}}{{ $+$ }}{{potential(Rome)}}{{ $-$ }}{{potential(Prague)}}").scale(text_scale).next_to(formula[0], RIGHT, buff = 0.1)
-        Group(formula, formulaRHS).move_to(background_formula.get_center())
-        Group(formula, formulaRHS, background_formula).to_edge(DOWN, buff = 0.3)
+        Group(formula, formulaRHS).move_to(background_formula.get_center()+0.3*UP)
+        Group(formula, formulaRHS, background_formula).to_edge(DOWN, buff = prop_buffer)
 
         self.play(FadeIn(background_formula), FadeIn(formula))
         self.wait()
 
-        self.play(FadeIn(formulaRHS))
+        self.play(FadeIn(formulaRHS[0]), FadeIn(formulaRHS[1]), )
+        self.wait()
+        self.play(FadeIn(formulaRHS[2]), FadeIn(formulaRHS[3]), )
+        self.wait()
+        self.play(FadeIn(formulaRHS[4]), FadeIn(formulaRHS[5]), )
         self.wait()
 
 
@@ -193,12 +212,12 @@ class Chapter21flat(Scene):
         self.wait()
 
 
-        self.play(
-            G.vertex_potentials[6].animate.increment_value(5),
-            G.vertex_potentials[7].animate.increment_value(5),
-            G.vertex_potentials[8].animate.increment_value(5)
-        )
-        self.wait()
+        # self.play(
+        #     G.vertex_potentials[6].animate.increment_value(5),
+        #     G.vertex_potentials[7].animate.increment_value(5),
+        #     G.vertex_potentials[8].animate.increment_value(5)
+        # )
+        # self.wait()
 
         self.play(
             FadeOut(formula[0]),
@@ -209,15 +228,22 @@ class Chapter21flat(Scene):
 
 
 
-        necessary = Tex(r"Necessary for every node: potential(node) $\le$ distance(node, Rome)").move_to(background_formula.get_center()).shift(0.3*UP)
+        necessary = Tex(r"{{\textit{Necessary} for every node: }}{{potential(node) $\le$ distance(node, Rome)}}")
+        sufficient = Tex(r"{{\textit{Sufficient} for every edge $u,v$: }}{{New length($u$,$v$) $\ge$ 0}}")
+        gr = Group(necessary[0], necessary[1], sufficient[0], Group(*sufficient[1:])).arrange_in_grid(cols = 2, col_widths=[5, 5]).move_to(background_formula.get_center())
+
+
+        sufficient2 = Tex(r"{{\textit{Sufficient} for every edge $u,v$: }}{{length($u$,$v$) $+$ potential($v$) - potential($u$) $\ge$ $0$}}").move_to(sufficient.get_center())
+        sufficient23 = Tex(r"{{\textit{Sufficient} for every edge $u,v$: }}{{length($u$,$v$) }}{{$+$ }}{{potential($v$) }}{{$-$ }}{{potential($u$) }}{{$\ge$ }}{{0}}").move_to(sufficient.get_center())
+        sufficient3 = Tex(r"{{\textit{Sufficient} for every edge $u,v$: }}{{potential($u$)}}{{ $-$ }}{{potential($v$) }}{{$\le$ }}{{length($u$,$v$) }}").move_to(sufficient.get_center())
+
+        for s in [sufficient2, sufficient23, sufficient3]:
+            s[0].move_to(sufficient[0].get_center())
+            Group(*s[1:]).move_to(Group(*sufficient[1:]).get_center())
 
         self.play(FadeIn(necessary))
         self.wait()
 
-        sufficient = Tex(r"{{Sufficient for every edge $u,v$: }}{{New length($u$,$v$) $\ge$ 0}}").next_to(necessary, DOWN)
-        sufficient2 = Tex(r"{{Sufficient for every edge $u,v$: }}{{length($u$,$v$) $+$ potential($v$) - potential($u$) $\ge$ $0$}}").move_to(sufficient.get_center())
-        sufficient23 = Tex(r"{{Sufficient for every edge $u,v$: }}{{length($u$,$v$) }}{{$+$ }}{{potential($v$) }}{{$-$ }}{{potential($u$) }}{{$\ge$ }}{{0}}").move_to(sufficient.get_center())
-        sufficient3 = Tex(r"{{Sufficient for every edge $u,v$: }}{{potential($u$)}}{{ $-$ }}{{potential($v$) }}{{$\le$ }}{{length($u$,$v$) }}").move_to(sufficient.get_center())
 
         self.play(FadeIn(sufficient))
         self.wait()
@@ -240,6 +266,20 @@ class Chapter21flat(Scene):
         )
         self.wait()
 
+        # Our potential has to satisfy this second condition which also implies this first one, but let me add both of them to our list, simply because the first condition is much easier to understand. So if this inequality is hard to understand, just think of it as a bit more complicated version of this one. 
+
+        rec = SurroundingRectangle(sufficient23, color = RED)
+        rec.generate_target()
+        rec.target = SurroundingRectangle(necessary, color = RED)
+
+        self.play(FadeIn(rec))
+        self.wait()
+        self.play(MoveToTarget(rec))
+        self.wait()
+        self.play(FadeOut(rec))
+        self.wait()
+
+
         self.play(
             *[FadeOut(sufficient23[i]) for i in [0, 1, 3, 4, 5, 6]],
             FadeOut(necessary)
@@ -247,19 +287,28 @@ class Chapter21flat(Scene):
         self.wait()
 
 
+        optimistic = Tex(r"potential($u$) is optimistic estimate of distance($u$, Rome)", font_size = 50).move_to(background_formula.get_center())
+        self.play(FadeIn(optimistic))
+        self.wait()
+        self.play(FadeOut(optimistic))
+        self.wait()
+        
+
+
 class Chapter22(ThreeDScene):
     def construct(self):
 
         default()
-
+        self.camera.background_color = BASE02
+        
         Tex.set_default(font_size = 27)
         self.next_section(skip_animations=True)
 
-        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False, rate = 0.25)
+        _, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False, rate = 0.25)
         _, _, _, _, distances, _ = G.run_dijkstra(ROME, PRAGUE, 1)
 
 
-        self.add(background, europe_boundary, G)
+        self.add(europe_boundary, G)
         self.add(
             *[e for e in G.edges.values()],
             *[v for v in G.vertices.values()],
@@ -270,11 +319,12 @@ class Chapter22(ThreeDScene):
         )
 
 
-        shft = 1*RIGHT + 0.5*UP
+        
         self.move_camera(
             phi=40 * DEGREES,
             run_time=0.5,
-            added_anims = [Group(background, europe_boundary, *G.vertices.values()).animate.shift(shft)]
+            zoom = zoo,
+            added_anims = [Group(europe_boundary, *G.vertices.values()).animate.shift(shft)]
         )
 
         self.next_section(skip_animations=False)
@@ -282,12 +332,12 @@ class Chapter22(ThreeDScene):
 
 
 
-        prop_list = create_potential_list([0, 0, 0, 0]).to_corner(UL, buff = 0.3)
+        prop_list = create_potential_list([0, 0, 0, 0]).to_corner(UL, buff = prop_buffer)
         self.add_fixed_in_frame_mobjects(prop_list[0], prop_list[1], prop_list[2], prop_list[3], prop_list[4])
         self.play(
-            FadeIn(prop_list[0]), 
-            FadeIn(prop_list[1]), 
-            FadeIn(prop_list[2]), FadeIn(prop_list[3]), FadeIn(prop_list[4]))
+            FadeIn(prop_list[0]), FadeIn(prop_list[1]), 
+            FadeIn(prop_list[2]), FadeIn(prop_list[3]), FadeIn(prop_list[4])
+        )
         
         ############################
     
@@ -296,8 +346,8 @@ class Chapter22(ThreeDScene):
         back = Rectangle(height = hheight, width = hwidth, color = RED, fill_color = config.background_color, 
         fill_opacity = 1).to_edge(DOWN, buff = 0.3)     
 
-        tex_best_pot = Tex(r"{{Best potential is: }}{{potential($u$) $=$ distance($u$, Rome)}}", z_index = 100).move_to(back.get_center())
-
+        tex_best_pot = Tex(r"{{for every node $u$ }}{{potential($u$) $=$ distance($u$, Rome)}}", z_index = 100).move_to(back.get_center())
+        tex_best_pot.shift(2*LEFT)
 
         self.add_fixed_in_frame_mobjects(back, tex_best_pot)
 
@@ -308,6 +358,33 @@ class Chapter22(ThreeDScene):
         self.wait()
 
         
+        rec = SurroundingRectangle(prop_list[4][1], color = RED).set_z_index(1000)
+        self.add_fixed_in_frame_mobjects(rec)
+        self.remove(rec)
+        self.play(FadeIn(rec))
+        self.wait()
+
+        recp = SurroundingRectangle(prop_list[3][1], color = RED).set_z_index(1000)
+        self.add_fixed_in_frame_mobjects(recp)
+        self.remove(recp)
+        self.play(Transform(rec, recp))
+        self.wait()
+
+        recp = SurroundingRectangle(prop_list[4][1], color = RED).set_z_index(1000)
+        self.add_fixed_in_frame_mobjects(recp)
+        self.remove(recp)
+        self.play(Transform(rec, recp))
+        self.wait()
+
+        recp = SurroundingRectangle(prop_list[2], color = RED).set_z_index(1000)
+        self.add_fixed_in_frame_mobjects(recp)
+        self.remove(recp)
+        self.play(Transform(rec, recp))
+        self.wait()
+
+        self.play(FadeOut(rec))
+        self.wait()
+
 
         # So it looks like we are done! We found a formula for the best possible potential that satisfies both requirements on our list! Or are we still missing something? Well, let’s see what would happen if we apply the potential reweighting trick with this potential and then run Dijkstra’s algorithm on the new graph. You can see that the algorithm simply walks along the shortest path to Rome and it doesn’t even bother exploring anything else. Amazing!
 
@@ -350,23 +427,9 @@ class Chapter22(ThreeDScene):
         self.play(FadeIn(prop_list[5]))
         self.wait()
 
-        self.play(
-            G.show_names(range(20)),
-            G.show_names(range(22, N_CITIES)),
-            *[FadeOut(edge) for edge in G.edges.values()],
-            *[FadeOut(edge_weight) for edge_weight in G.edge_weights_objs.values()],
-        )
-        self.wait()
-        
-        self.play(
-            G.hide_names(range(20)),
-            G.hide_names(range(22, N_CITIES)),
-            *[FadeIn(edge) for edge in G.edges.values()],
-            *[FadeIn(edge_weight) for edge_weight in G.edge_weights_objs.values()],
-        )
-        self.wait()
 
-        tex_decent = Tex(r"{{Very decent potential: }}{{potential($u$) $=$ air distance($u$, Rome)}}", z_index = 100).move_to(back.get_center()).shift(0.3*UP)
+        tex_decent = Tex(r"{{for every node $u$ }}{{potential($u$) $=$ air distance($u$, Rome)}}", z_index = 100).move_to(back.get_center()).shift(0.3*UP)
+        tex_decent.shift(2*LEFT)
         air_distance = G.gen_air_potentials(ROME)
         
         self.add_fixed_in_frame_mobjects(tex_decent)
@@ -412,54 +475,88 @@ class Chapter22(ThreeDScene):
         # For example, Prague is …km away, so its potential would become … In general, these potentials are then forming a nice cone with Rome in the middle. This potential approximates the true distance from Prague to Rome quite decently. [point 1 je ticked] It is also definitely easy to compute if we know the geographical locations of the cities on the map. If the Earth was flat, we would compute the potential by literally plugging in the two positions to Pythagorean theorem [napsat vzoreček]. The Earth is not flat, but still the same story.  
 
         ticks = [
-            clipart_yes_no_maybe("yes", 0.5).next_to(prop_list[2], LEFT, buff = 0.2).set_z_index(1000).shift(0.5*RIGHT),
-            clipart_yes_no_maybe("yes", 0.5).next_to(prop_list[3], LEFT, buff = 0.2).set_z_index(1000).shift(0.5*RIGHT),
-            clipart_yes_no_maybe("yes", 0.5).next_to(prop_list[4], LEFT, buff = 0.2).set_z_index(1000).shift(0.5*RIGHT),
-            clipart_yes_no_maybe("yes", 0.5).next_to(prop_list[5], LEFT, buff = 0.2).set_z_index(1000).shift(0.5*RIGHT),
+            clipart_yes_no_maybe("yes", 0.5).next_to(prop_list[2], RIGHT, buff = 0.2).set_z_index(1000).shift(0.5*RIGHT),
+            clipart_yes_no_maybe("yes", 0.5).next_to(prop_list[3], RIGHT, buff = 0.2).set_z_index(1000).shift(0.5*RIGHT),
+            clipart_yes_no_maybe("yes", 0.5).next_to(prop_list[4], RIGHT, buff = 0.2).set_z_index(1000).shift(0.5*RIGHT),
+            clipart_yes_no_maybe("yes", 0.5).next_to(prop_list[5], RIGHT, buff = 0.2).set_z_index(1000).shift(0.5*RIGHT),
         ]
+
+        for i in [1, 2, 3]:
+            ticks[i].align_to(ticks[0].get_left(), LEFT)
 
         self.add_fixed_in_frame_mobjects(ticks[0])
         self.play(
             FadeIn(ticks[0]),
+            #Flash(ticks[0].get_center(), color = GREEN),
         )
         self.wait()
 
-        tex_btw = Tex(r"Until you start digging tunnels. :)", z_index = 100).next_to(tex_decent, DOWN)
+        tex_btw = Tex(r"Until you start digging tunnels. :)", z_index = 100).scale(0.5).next_to(tex_decent, DOWN)
         self.add_fixed_in_frame_mobjects(ticks[2], tex_btw)
         self.play(
             FadeIn(ticks[2]),
             FadeIn(tex_btw),
+            #Flash(ticks[2].get_center(), color = GREEN),
         )
         self.wait()
 
         tex_inequality = Tex(r"air distance(u, Rome) $\le$ air distance(v, Rome) $+$ air distance(u,v) \\ $\le$ air distance(v, Rome) $+$ length(u,v) ", 
-        z_index = 100).move_to(back.get_center()).next_to(tex_decent, DOWN)
+        z_index = 100).scale(0.5).move_to(back.get_center()).next_to(tex_decent, DOWN)
         self.add_fixed_in_frame_mobjects(ticks[1], tex_inequality)
         self.play(
             FadeIn(ticks[1]),
+            #Flash(ticks[1].get_center(), color = GREEN),
             FadeOut(tex_btw),
             FadeIn(tex_inequality)
         )
         self.wait()
 
-        tex_formula = Tex(r"potential($u$) $=$ $\sqrt{(u.x $-$ \text{Rome}.x)^2 $+$ (u.y $-$ \text{Rome}.y)^2}$", 
+        self.play(
+            *[G.vertex_potentials[v].animate.set_value(0) for v in G.vertices.keys()],
+        )
+        self.wait()
+        
+
+        self.play(
+            FadeOut(tex_inequality),
+            G.show_names(range(20)),
+            G.show_names(range(22, N_CITIES)),
+            *[FadeOut(edge) for edge in G.edges.values()],
+            *[FadeOut(G.edge_weights_objs[e]) for e in G.edges.keys()],
+        )
+        self.wait()
+        
+        self.play(
+            G.hide_names(range(20)),
+            G.hide_names(range(22, N_CITIES)),
+            *[FadeIn(edge) for edge in G.edges.values()],
+            *[FadeIn(G.edge_weights_objs[e]) for e in G.edges.keys()],
+        )
+        self.wait()
+
+
+        tex_formula = Tex(r"$\text{potential}(u) = \sqrt{(u.x - \text{Rome}.x)^2 + (u.y - \text{Rome}.y)^2}$", 
         z_index = 100).next_to(tex_decent, DOWN).shift(0.1*DOWN)
         self.add_fixed_in_frame_mobjects(ticks[3], tex_formula)
         self.play(
             FadeIn(ticks[3]),
-            FadeOut(tex_inequality),
+            #Flash(ticks[3].get_center(), color = GREEN),
             FadeIn(tex_formula),
         )
         self.wait()
-
+        
         self.play(
-            FadeOut(tex_formula)
+            FadeOut(tex_formula),
         )
-        self.wait()        
+        self.wait()
 
         # And what about property two? That one is also true, because for any two nodes, we can first use triangle inequality for air distances, and then use the fact that actual distance is always longer than the air distance. 
         # [*Let’s postpone the discussion about Earth’s curvature and digging tunnels to the comment section…]
 
+        self.play(
+            *[G.vertex_potentials[v].animate.set_value(air_distance[v]) for v in G.vertices.keys()],
+        )
+        self.wait()
 
 
         # Let’s see what happens if we plug in this potential into our A* algorithm. We start with the original graph, then we elevate every node to appropriate height, and then we run Dijkstra. [strauss?]
@@ -479,21 +576,21 @@ class AstarBeautiful(ThreeDScene):
     def construct(self):
         default()
         self.next_section(skip_animations=False)
-
-        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = True, rate = 0.3)
-        self.add(background, europe_boundary, G, *[G.vertex_height_lines[v] for v in range(N_CITIES)])
+        self.camera.background_color = BASE02
+        _, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = True, rate = 0.3)
+        self.add(europe_boundary, G, *[G.vertex_height_lines[v] for v in range(N_CITIES)])
 
         self.move_camera(
             phi= 80 * DEGREES,
             zoom = 1.5,
-            run_time=1,
+            run_time=3,
         )
         
         G.disable_colors()
         air_potentials = G.gen_air_potentials(ROME)
         self.move_camera(
             theta= -140 * DEGREES,
-            run_time=1,
+            run_time=3,
             added_anims = [G.vertex_potentials[v].animate.set_value(air_potentials[v]) for v in G.vertices]
         )
         self.wait()
@@ -503,7 +600,7 @@ class AstarBeautiful(ThreeDScene):
         )
         self.wait()
 
-        anims, lines, sp_nodes, sp_edges, _, _ = G.run_dijkstra(PRAGUE, ROME, 1)
+        anims, lines, sp_nodes, sp_edges, _, _ = G.run_dijkstra(PRAGUE, ROME, 3)
         self.play(Flash(G.vertices[PRAGUE], color = RED))
         self.move_camera(
             theta= -60 * DEGREES,
@@ -515,4 +612,44 @@ class AstarBeautiful(ThreeDScene):
         self.wait()
         
 
+
+
+
+
+class AstarMoreBeautiful(ThreeDScene):
+    def construct(self):
+        default()
+        self.camera.background_color = BASE02
+        _, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = True, rate = 0.3)
+        Group(europe_boundary, G).shift(0.5*RIGHT + 4*DOWN)
+        #.shift(0.5*RIGHT + 2*DOWN) 70
+        self.add(europe_boundary, G)
+
+        self.move_camera(
+            phi= 80 * DEGREES,
+            theta= -90 * DEGREES,
+            zoom = 0.9,
+            run_time=3,
+        )
+        
+        air_potentials = G.gen_air_potentials(ROME)
+        self.play(
+            *[G.vertex_potentials[v].animate.set_value(air_potentials[v]) for v in G.vertices]
+        )
+
+        G.disable_colors()
+
+        anims, lines, sp_nodes, sp_edges, _, _ = G.run_dijkstra(PRAGUE, ROME, 3, thumbnail = True)
+        self.play(anims)
+
+        self.wait()
+        
+class Test(Scene):
+    def construct(self):
+        dot = Dot(color = RED)
+        dot2 = Dot(color = RED).move_to(RIGHT)
+        dot2.add_updater(lambda mob,dt: mob.next_to(dot, DOWN))
+
+        self.add(dot, dot2)
+        self.wait()
 

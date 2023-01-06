@@ -163,23 +163,24 @@ def Astar(G, start, end):
 
 infinity = 100
 
-# A* pseudocode
+# A* pseudocode, computes distance from start to end
 def Astar(G, start, end):
-    #PART 1: Compute clever potentials
+
+    #PART 1: Choose a suitable potential
     def potential(node):
-        return sqrt( (node.x - end.x)^2 + (node.y - end.y)^2)
+        return sqrt( (node.x - end.x)^2 + (node.y - end.y)^2 )
 
     #PART 2: Potential reweighting
-    # for edge in G.edges:
-    #     edge.length += potential(edge[1]) - potential(edge[0])
+    for edge in G.edges:
+        edge.length += potential(edge[1]) - potential(edge[0])
 
     #PART 3: Run Dijkstra 
-    boundary_nodes = {start} # this is priority queue in real implementation
+    boundary_nodes = {start} # this would be a priority queue in real implementation
     distances = {}
 
-    while boundary_nodes != []:
+    while len(boundary_nodes) > 0:
         # always remove the currently closest node
-        cur_node = argmin(boundary_nodes, lambda node: distances[node] + potential(node) )
+        cur_node = argmin(boundary_nodes, lambda node: distances[node])
 
         # bookkeeping
         boundary_nodes.remove(cur_node)
@@ -187,7 +188,7 @@ def Astar(G, start, end):
             return distances[end]
         
         # relax all neighbors
-        for neighbor, edge_length in cur_node.neighbors:
+        for neighbor, edge_length in G.neighbors(cur_node):
             proposed_distance = distances[cur_node] + edge_length
             if neighbor not in distances or distances[neighbor] > proposed_distance: 
                 distances[neighbor] = proposed_distance
@@ -196,7 +197,39 @@ def Astar(G, start, end):
     return infinity
 
 
+# A* pseudocode, computes distance from start to end
+def Astar(G, start, end):
 
+    # PART 1: Choose a suitable potential
+    def potential(node):
+        return sqrt( (node.x - end.x)**2 + (node.y - end.y)**2)
+
+    # PART 2: Potential reweighting
+    # for edge in G.edges:
+    #     edge.length += potential(edge[1]) - potential(edge[0])
+    
+
+    # PART 3: Run Dijkstra
+    boundary_nodes = {start} # this would be a priority queue in real implementation
+    distances = {}
+
+    while len(boundary_nodes) > 0:
+        # always remove the currently closest node
+        cur_node = argmin(boundary_nodes, lambda node: distances[node] + potential(node) - potential(start))
+
+        # bookkeeping
+        boundary_nodes.remove(cur_node)
+        if cur_node == end:
+            return distances[end]
+
+        # relax all neighbors
+        for neighbor, edge_length in G.neighbors(cur_node):
+            proposed_distance = distances[cur_node] + edge_length
+            if neighbor not in distances or distances[neighbor] > proposed_distance:
+                distances[neighbor] = proposed_distance
+                boundary_nodes.add(neighbor)
+
+    return infinity
 
 
 

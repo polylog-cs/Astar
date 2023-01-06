@@ -99,7 +99,8 @@ class DvsA(Scene):
                 circles[i].set_color(BLACK)
             if not is_left(i):
                 circles[i].shift(0.5*LEFT + 0* UP)
-            
+            if is_left(i):
+                circles[i].shift(0.5*DOWN)
             # self.add(Tex(i).scale(1.5).move_to(circles[i].get_center()))
 
 
@@ -113,11 +114,11 @@ class DvsA(Scene):
         
         for i in range(2):
             tex_start[i].next_to(circles[start[i]], UR, buff = 0.05).set(z_index = 100)
-            tex_end[i].next_to(circles[end[i]], LEFT, buff = 0.2 ).set(z_index = 100)
+            tex_end[i].next_to(circles[end[i]], DOWN, buff = 0.2 ).set(z_index = 100)
             tex_name[i].move_to(circles[start[i]].get_center())
             tex_name[i].shift(2.0*UP)
             tex_opt[i][0].move_to(circles[start[i]].get_center())
-            tex_opt[i][0].shift(3.5*DOWN)
+            tex_opt[i][0].shift(3.0*DOWN)
             tex_opt[i][1].next_to(tex_opt[i][0], DOWN, buff = 0.2)
 
             self.play(
@@ -136,7 +137,7 @@ class DvsA(Scene):
 
             self.play(
                 circles[open[i]].animate.set_color(RED),
-                FadeIn(tex_opt[i]),
+                FadeIn(tex_opt[i][1]),
             )
             self.wait()
             self.play(
@@ -200,18 +201,28 @@ class Practice(Scene):
 class Negative(Scene):
     def construct(self):
         default()
-        tex1 = Tex("Shortest path in graphs with negative edges?").shift(1*UP)
-        tex2 = Tex(r"{{Bellman-Ford (1950's): }}{{time $O(mn)$").scale(0.7)
-        tex25 = Tex(r"{{Gabow-Tarjan (1989): }}{{time $O(m\sqrt{n} \cdot \text{polylog}(n) )$").scale(0.7)
-        tex3 = Tex(r"{{Bernstein, Nanongkai, Wulff-Nilsen (2022): }}{{time $O((m+n) \cdot \text{polylog}(n))$").scale(0.7)
-        tex4 = Tex(r"A simpler application in video description. ").scale(0.4).to_edge(DOWN)
-        Group(tex2[0], tex2[1], tex25[0], tex25[1], tex3[0], tex3[1]).arrange_in_grid(rows = 3, cols = 2, cell_alignment=LEFT).next_to(tex1, DOWN, buff = 1)
+        tex1 = Tex("Shortest path in graphs with negative edges?*").shift(2*UP)
+        texass = Tex("*Assuming there are no negative length cycles. ").scale(0.4).to_edge(DOWN)
+        tex15 = Tex(r"{{Algorithm }}{{Time complexity").scale(0.7)
+        
+        tex2 = Tex(r"{{Bellman-Ford (1950's): }}{{$O(mn)$").scale(0.7)
+        tex25 = Tex(r"{{Gabow-Tarjan (1989): }}{{$O(m\sqrt{n} \cdot \text{polylog}(n) )$").scale(0.7)
+        tex3 = Tex(r"{{Bernstein, Nanongkai, Wulff-Nilsen (2022): }}{{$O((m+n) \cdot \text{polylog}(n))$").scale(0.7)
+        tex4 = Tex(r"A simpler application in video description. ").scale(0.4).next_to(texass, DOWN, buff = 0.1)
+        Group(tex15[0], tex15[1], tex2[0], tex2[1], tex25[0], tex25[1], tex3[0], tex3[1]).arrange_in_grid(cols = 2, cell_alignment=LEFT).next_to(tex1, DOWN, buff = 2)
+        tex15.shift(0.5*UP)
 
         self.play(
-            FadeIn(tex1)
+            FadeIn(tex1),
+            FadeIn(texass)
         )
         self.wait()
         
+        self.play(
+            FadeIn(tex15)
+        )
+        self.wait()
+
         self.play(
             FadeIn(tex2)
         )

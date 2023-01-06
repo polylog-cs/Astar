@@ -229,7 +229,7 @@ class Puzzle(Scene):
 
         # Remember, our heuristic should basically be an optimistic guess on the number of moves that we need to solve given configuration. 
 
-        tex_heuristic = Tex(r"A* heuristic $\approx$ an optimistic guess on how many moves are needed. ").scale(0.7).next_to(picture, DOWN, buff = 0.5)
+        tex_heuristic = Tex(r"A* heuristic $\approx$ an optimistic estimate of how many moves are needed. ").scale(0.7).next_to(picture, DOWN, buff = 0.5)
         self.play(
             FadeIn(tex_heuristic)
         )
@@ -356,13 +356,15 @@ class Puzzle2(RubikScene):
         rubik_cube = RubiksCube(cubie_size=0.5)
         Tex.set_default(font_size = 30)
         
+        tex_cube =Tex(r"{{A* with heuristic($u$) = min(dist($u$, end), $t$) does the same as \\ }}{{meet in the middle if you precompute cubes up to distance $t$ from end cube}}").scale(0.5)
+        tex_cube[-1].scale(1)
         table = Group(
             Dot(), Tex("Maps").scale(2), Tex("15 puzzle").scale(2), Tex("Rubik's cube").scale(2),
             Dot(), graph, picture, rubik_cube,
-            Tex("Heuristic: "), Tex("Air distance"), Tex("sum of individual distances"), Tex(r"Heuristic(u) = min(dist(u, target), diameter/2)\\ a.k.a. meet in the middle if you know diameter").scale(0.7),
+            Tex("Heuristic: "), Tex("Air distance"), Tex("sum of individual distances"), tex_cube,
             Tex("Speedup: "), Tex(r"$4\times$"), Tex(r"$10^6\times$"), Tex(r"$10^{10}\times$")
         ).arrange_in_grid(rows = 4, cols = 4).move_to(ORIGIN)
-
+        
         self.play(
             *[FadeIn(t) for t in table[1:3]],
             FadeIn(graph), FadeIn(picture),

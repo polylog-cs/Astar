@@ -6,39 +6,37 @@ from manim import config as global_config
 from utils.util import *
 from utils.util_graph import *
 
-class Thanks(Scene):
-    def construct(self):#TODO správný lidi
-        s = [
-            "Big thanks to",
-            "-- 3blue1brown and Manim Community for Manim",
-            "-- csha, Jindra Dušek, Martin Dvořák, Bernhard Haeupler, Florian Haeupler,",
-            "Richard Hladík, Filip Hlásek, Aranka Hrušková, Yannic Maus, Jan Petr, ",
-            "Hanka Rozhoňová, Jukka Suomela, Jan Volhejn, Vojtěch Volhejn, ",
-            "Tung Anh Vu, Vilas Winstein",
-            "See video description for links and some more related math. :)",
-        ]
-        t = [
-            Tex(ss, color = text_color) for ss in s
-        ]
-        # for i in range(3, len(t)):
-        #     t[i].scale(0.7)
-        t[0].move_to(5*LEFT + 3*UP)
-        t[1].next_to(t[0], DOWN).align_to(t[0], LEFT)
-        t[2].next_to(t[1], DOWN).align_to(t[0], LEFT)
-        t[3].scale(0.7).next_to(t[2], DOWN).align_to(t[0], LEFT)
-        t[4].scale(0.7).next_to(t[3], DOWN).align_to(t[0], LEFT)
-        t[5].scale(0.7).next_to(t[4], DOWN).align_to(t[0], LEFT)
-        t[6].scale(0.7).next_to(t[5], DOWN).align_to(t[0], LEFT)
-        t[7].move_to(t[5].get_center()[1]*UP + 2*DOWN)
+# class Thanks(Scene):
+#     def construct(self):#TODO správný lidi
+#         s = [
+#             "Big thanks to",
+#             "-- 3blue1brown and Manim Community for Manim",
+#             "Richard Hladík, Aranka Hrušková, Yannic Maus, Jan Petr, ",
+#             "Hanka Rozhoňová",
+#             "See video description for links and some more related math. :)",
+#         ]
+#         t = [
+#             Tex(ss, color = text_color) for ss in s
+#         ]
+#         # for i in range(3, len(t)):
+#         #     t[i].scale(0.7)
+#         t[0].move_to(5*LEFT + 3*UP)
+#         t[1].next_to(t[0], DOWN).align_to(t[0], LEFT)
+#         t[2].next_to(t[1], DOWN).align_to(t[0], LEFT)
+#         t[3].scale(0.7).next_to(t[2], DOWN).align_to(t[0], LEFT)
+#         t[4].scale(0.7).next_to(t[3], DOWN).align_to(t[0], LEFT)
+#         t[5].scale(0.7).next_to(t[4], DOWN).align_to(t[0], LEFT)
+#         t[6].scale(0.7).next_to(t[5], DOWN).align_to(t[0], LEFT)
+#         t[7].move_to(t[5].get_center()[1]*UP + 2*DOWN)
 
-        self.play(
-            *[FadeIn(tt) for tt in t]
-        )
-        self.wait()
-        self.play(
-            *[FadeOut(o) for o in self.mobjects]
-        )
-        self.wait()
+#         self.play(
+#             *[FadeIn(tt) for tt in t]
+#         )
+#         self.wait()
+#         self.play(
+#             *[FadeOut(o) for o in self.mobjects]
+#         )
+#         self.wait()
 
 class Intro(Scene):
     def construct(self):
@@ -109,17 +107,17 @@ class Intro(Scene):
 
         #A*
 
-        # show city positions
-        self.play(
-            G.show_names(range(N_CITIES)),
-            *[FadeOut(edge) for edge in G.edges.values()],
-        )
-        self.wait()
-        self.play(
-            G.hide_names(range(N_CITIES)),
-            *[FadeOut(edge) for edge in G.edges.values()],
-        )
-        self.wait()
+        # # show city positions
+        # self.play(
+        #     G.show_names(range(N_CITIES)),
+        #     *[FadeOut(edge) for edge in G.edges.values()],
+        # )
+        # self.wait()
+        # self.play(
+        #     G.hide_names(range(N_CITIES)),
+        #     *[FadeOut(edge) for edge in G.edges.values()],
+        # )
+        # self.wait()
 
         # run A*
 
@@ -134,26 +132,26 @@ class Intro(Scene):
         self.play(Flash(G.vertices[ROME], color = RED))
         self.wait()
         
-        ellipse = Ellipse(
-            width = 1.2 * np.linalg.norm(G.vertices[PRAGUE].get_center() - G.vertices[ROME].get_center()),
-            height = 0.6 * np.linalg.norm(G.vertices[PRAGUE].get_center() - G.vertices[ROME].get_center()),
-            fill_opacity = 0.3,
-            fill_color = RED,
-            z_index = 10000,
-            ).rotate((-10.0 - 90.0)/360*2*PI).move_to(0.6 * G.vertices[PRAGUE].get_center() + 0.4 * G.vertices[ROME].get_center())
-        self.play(
-            FadeIn(ellipse)
-        )
-        self.wait()
+        # ellipse = Ellipse(
+        #     width = 1.2 * np.linalg.norm(G.vertices[PRAGUE].get_center() - G.vertices[ROME].get_center()),
+        #     height = 0.6 * np.linalg.norm(G.vertices[PRAGUE].get_center() - G.vertices[ROME].get_center()),
+        #     fill_opacity = 0.3,
+        #     fill_color = RED,
+        #     z_index = 10000,
+        #     ).rotate((-10.0 - 90.0)/360*2*PI).move_to(0.6 * G.vertices[PRAGUE].get_center() + 0.4 * G.vertices[ROME].get_center())
+        # self.play(
+        #     FadeIn(ellipse)
+        # )
+        # self.wait()
 
-        self.play(
-            *[FadeOut(line) for line in lines.values()],
-            FadeOut(ellipse),
-            FadeOut(dijkstra_headline),
-            FadeOut(tex_rome),
-            FadeOut(tex_prague)
-        )
-        self.wait()
+        # self.play(
+        #     *[FadeOut(line) for line in lines.values()],
+        #     #FadeOut(ellipse),
+        #     FadeOut(dijkstra_headline),
+        #     FadeOut(tex_rome),
+        #     FadeOut(tex_prague)
+        # )
+        # self.wait()
 
 class Polylog(Scene):
     def construct(self):
@@ -303,22 +301,22 @@ class Chapter11(MovingCameraScene):
             FadeIn(tex_how_can),
         )
 
-        air_potentials = G.gen_air_potentials(13)
-        self.play(
-            *[G.vertex_potentials[v].animate.set_value(air_potentials[v]) for v in G.vertices],
-        )
-        self.wait()
+        # air_potentials = G.gen_air_potentials(13)
+        # self.play(
+        #     *[G.vertex_potentials[v].animate.set_value(air_potentials[v]) for v in G.vertices],
+        # )
+        # self.wait()
 
-        air_potentials = G.gen_air_potentials(0)
-        self.play(
-            *[G.vertex_potentials[v].animate.set_value(air_potentials[v]) for v in G.vertices],
-        )
-        self.wait()
+        # air_potentials = G.gen_air_potentials(0)
+        # self.play(
+        #     *[G.vertex_potentials[v].animate.set_value(air_potentials[v]) for v in G.vertices],
+        # )
+        # self.wait()
 
 
-        air_potentials = G.gen_air_potentials(22)
+        # air_potentials = G.gen_air_potentials(22)
         self.play(
-            *[G.vertex_potentials[v].animate.set_value(air_potentials[v]) for v in G.vertices],
+            *[G.vertex_potentials[v].animate.set_value(0) for v in G.vertices],
         )
         self.wait()
 
@@ -362,51 +360,100 @@ class Chapter12(MovingCameraScene):
 
         # So what can we do? Well, maybe we need to change more than one edge at a time. Look, let’s say I just take this edge and increase its length by one, but also, what if I offset this change by decreasing the length of all of these followup edges by one? Now, any path that uses the longer edge first gets longer by one, but immediately after that it gets shorter by one. So any one of these paths have the same length as before the change! [Ukáže se cesta červeně, změněná čísla možná tlustě]
 
-        G.edge_weights_objs[(7, 6)].save_state()
-        self.play(
-            Flash(G.edge_weights_objs[(7, 6)], color = RED),
-            G.edge_weights_objs[(7, 6)].animate.scale(1.5),
-        )
-        self.wait()
+        # G.edge_weights_objs[(7, 6)].save_state()
+        # self.play(
+        #     Flash(G.edge_weights_objs[(7, 6)], color = RED),
+        #     G.edge_weights_objs[(7, 6)].animate.scale(1.5),
+        # )
+        # self.wait()
 
-        # first just 7 6
-        simple_reweighting(self, G, [(7, 6)], [], -1, 2.0, -1)
-        simple_reweighting(self, G, [(7, 6)], [], 2, 2.0, 1)
-        simple_reweighting(self, G, [(7, 6)], [], -1, 2.0, 0)
+        # # first just 7 6
+        # simple_reweighting(self, G, [(7, 6)], [], -1, 2.0, -1)
+        # simple_reweighting(self, G, [(7, 6)], [], 2, 2.0, 1)
+        # simple_reweighting(self, G, [(7, 6)], [], -1, 2.0, 0)
         
-        self.play(
-            G.edge_weights_objs[(7, 6)].animate.restore(),
-        )
+        # self.play(
+        #     G.edge_weights_objs[(7, 6)].animate.restore(),
+        # )
+        # self.wait()
+
+        sc = 2.0
+        e1 = (7, 6)
+        num1 = G.edge_weights_objs[e1].copy()
+        b1 = SurroundingRectangle(num1, color = BACKGROUND_COLOR, fill_opacity = 1, fill_color = BACKGROUND_COLOR, buff = 0.0)
+
+        self.play(FadeIn(Group(b1, num1)), run_time = 0.001)
         self.wait()
 
-        # then 7,6, 0,7
-        G.edge_weights_objs[(7, 6)].save_state()
-        G.edge_weights_objs[(0, 7)].save_state()
-
-        self.play(
-            Flash(G.edge_weights_objs[(0, 7)], color = RED),
-            Flash(G.edge_weights_objs[(7, 6)], color = RED),
-            G.edge_weights_objs[(0, 7)].animate.scale(1.5),
-            G.edge_weights_objs[(7, 6)].animate.scale(1.5),
-        )
+        self.play(Group(b1, num1).animate.scale(sc))
         self.wait()
-
         
+        val1 = ValueTracker(2)
+        num1.add_updater(lambda mob: mob.set_value(val1.get_value()))
+        self.play(val1.animate.set_value(1), num1.animate.set_color(GREEN), G.edges[e1].animate.set_color(GREEN))
+        self.wait()
+        self.play(val1.animate.set_value(3), num1.animate.set_color(RED), G.edges[e1].animate.set_color(RED))
+        self.wait()
+        self.play(val1.animate.set_value(2), num1.animate.set_color(GRAY), G.edges[e1].animate.set_color(GRAY))
+        self.wait()
+        
+        self.play(Group(b1, num1).animate.scale(1.0/sc))
+        self.wait()
 
-        edges_plus, edges_minus = [(7, 6)], [(0, 7)]
-        simple_reweighting(self, G, edges_plus, edges_minus, -1, 2.0, -1)
-        # simple_reweighting(self, G, edges_plus, edges_minus, 2, 2.0, 1)
-        # simple_reweighting(self, G, edges_plus, edges_minus, -2, 2.0, -1)
+
+
+        # # then 7,6, 0,7
+        # G.edge_weights_objs[(7, 6)].save_state()
+        # G.edge_weights_objs[(0, 7)].save_state()
+
+        # self.play(
+        #     Flash(G.edge_weights_objs[(0, 7)], color = RED),
+        #     Flash(G.edge_weights_objs[(7, 6)], color = RED),
+        #     G.edge_weights_objs[(0, 7)].animate.scale(1.5),
+        #     G.edge_weights_objs[(7, 6)].animate.scale(1.5),
+        # )
+        # self.wait()
+
+        e2 = (0, 7)
+        num2 = G.edge_weights_objs[e2].copy()
+        b2 = SurroundingRectangle(num2, color = BACKGROUND_COLOR, fill_opacity = 1, fill_color = BACKGROUND_COLOR, buff = 0.0)
+
+        self.play(FadeIn(Group(b2, num2)), run_time = 0.001)
+        self.wait()
+
+        self.play(Group(b2, num2).animate.scale(sc), Group(b1, num1).animate.scale(sc))
+        self.wait()
+        
+        val2 = ValueTracker(2)
+        num2.add_updater(lambda mob: mob.set_value(val2.get_value()))
+        self.play(val1.animate.set_value(1), num1.animate.set_color(GREEN), G.edges[e1].animate.set_color(GREEN), 
+            val2.animate.set_value(3), num2.animate.set_color(RED), G.edges[e2].animate.set_color(RED), )
+        self.wait()
 
         go_along_path(self, G, [(0, 7), (7, 6)])
-        simple_reweighting(self, G, edges_plus, edges_minus, 1, 2.0, 0)
 
-
-        self.play(
-            G.edge_weights_objs[(0, 7)].animate.restore(),
-            G.edge_weights_objs[(7, 6)].animate.restore(),
-        )
+        self.play(val1.animate.set_value(2), num1.animate.set_color(GRAY), G.edges[e1].animate.set_color(GRAY),val2.animate.set_value(2), num2.animate.set_color(GRAY), G.edges[e2].animate.set_color(GRAY), )
         self.wait()
+        
+        self.play(Group(b2, num2).animate.scale(1.0/sc), Group(b1, num1).animate.scale(1.0/sc))
+        self.wait()
+        self.remove(b1, b2, num1, num2)
+
+
+        # edges_plus, edges_minus = [(7, 6)], [(0, 7)]
+        # simple_reweighting(self, G, edges_plus, edges_minus, -1, 2.0, -1)
+        # # simple_reweighting(self, G, edges_plus, edges_minus, 2, 2.0, 1)
+        # # simple_reweighting(self, G, edges_plus, edges_minus, -2, 2.0, -1)
+
+        
+        # simple_reweighting(self, G, edges_plus, edges_minus, 1, 2.0, 0)
+
+
+        # self.play(
+        #     G.edge_weights_objs[(0, 7)].animate.restore(),
+        #     G.edge_weights_objs[(7, 6)].animate.restore(),
+        # )
+        # self.wait()
 
         # set up potentials
         G.setup_potentials(rate = 0.5)
@@ -450,7 +497,7 @@ class Chapter12(MovingCameraScene):
 
         # self.play(G.vertex_potentials[6].animate.increment_value(-2))
         # self.play(G.vertex_potentials[6].animate.increment_value(2))
-        go_along_path(self, G, [(17, 16), (16, 5), (5, 6), (6, 22), (22, 25)])
+        go_along_path(self, G, [(0, 8), (8, 27), (27, 22), (22, 6), (6, 5), (5, 1)])
 
         # self.play(
         #     Flash(G.edge_weights_objs[(5, 6)])
@@ -507,8 +554,8 @@ class Chapter13(MovingCameraScene):
         self.wait()
 
 
-        go_along_path(self, G, [(0, 15), (15, 16)])
-        go_along_path(self, G, [(0, 12), (12, 13)])
+        # go_along_path(self, G, [(0, 15), (15, 16)])
+        # go_along_path(self, G, [(0, 12), (12, 13)])
 
 
         # So, we can repeatedly apply our trick to all the nodes, including Prague and Rome and we know that we are not changing what the shortest path is. I find this really magical, because after a few applications of this trick, the graph that we get looks very different from the graph we started with! Yet, finding the shortest path in the new graph gives the same result as in the old graph. 
@@ -517,7 +564,8 @@ class Chapter13(MovingCameraScene):
         # self.play(self.camera.frame.animate.move_to(G.vertices[8].get_center()))
         # self.play(G.vertex_potentials[PRAGUE].animate.increment_value(1))
  
-        # self.play(self.camera.frame.animate.scale(1.0 / 0.3).move_to(ORIGIN))
+        self.play(self.camera.frame.animate.scale(1.0 / 0.3).move_to(ORIGIN))
+        self.wait()
 
         # self.play(*[G.vertices[v].animate.scale(2.0) for v in [PRAGUE, 7, 6]])
         # self.wait()
@@ -561,14 +609,16 @@ class Chapter13(MovingCameraScene):
         self.play(self.camera.frame.animate.scale(1/0.3).move_to(ORIGIN))
         self.wait()
 
-
+zoo = 1.5
 class Chapter14(ThreeDScene):  # TODO check návaznost
     def construct(self):
         default()
+        self.camera.background_color = BASE02
+        
         self.next_section(skip_animations=True)
-        background, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
-        graph = Group(background, europe_boundary, G)
-        self.add(background, europe_boundary, G)
+        _, europe_boundary, G = clipart_map_europe(SCALE_EUROPE, undirected = False)
+        graph = Group(europe_boundary, G)
+        self.add(europe_boundary, G)
         self.add(
             *[e for e in G.edges.values()],
             *[v for v in G.vertices.values()],
@@ -577,6 +627,7 @@ class Chapter14(ThreeDScene):  # TODO check návaznost
         self.add_fixed_orientation_mobjects(
             *[G.edge_weights_objs[e] for e in G.edges.keys()],
         )
+        
         self.next_section(skip_animations=False)
         # for i in range(N_CITIES):
         #     self.add(Tex(i).move_to(G.vertices[i].get_center()))
@@ -593,22 +644,22 @@ class Chapter14(ThreeDScene):  # TODO check návaznost
         self.move_camera(
             zoom = 2.5,
             run_time=1,
-            added_anims= [Group(background, europe_boundary, *G.vertices.values()).animate.shift(1*RIGHT + 0.5*UP)]
+            added_anims= [Group(europe_boundary, *G.vertices.values()).animate.shift(1*RIGHT + 0.5*UP)]
         )
         self.play(
             G.vertex_potentials[6].animate.increment_value(1),
         )
         self.wait()
 
+        
 
         # In general, the three operations that we did to our graph are equivalent to raising these two nodes to elevation one and Prague to elevation two. And then we just redefine the lengths of all edges by the following formula. The new length of every edge is equal to its old length + the elevation of the node it goes to - the elevation of the node where it starts. 
         # [někde vedle se ukáže jen jedna hrana a jak je to pro ni] This is really just a different way of looking at the same trick. 
         self.move_camera(
-            zoom = 1.5,
+            zoom = zoo,
             run_time=1,
-            added_anims= [Group(background, europe_boundary, *G.vertices.values()).animate.shift(1*LEFT + -2.3*UP)]
+            added_anims= [Group( europe_boundary, *G.vertices.values()).animate.shift(1*LEFT + -1.3*UP)]
         )
-            
 
         self.play(
             G.vertex_potentials[7].animate.increment_value(1),
@@ -624,13 +675,14 @@ class Chapter14(ThreeDScene):  # TODO check návaznost
         defined = Tex("Definition of new edge lengths. ").scale(0.6).to_corner(UL)
         holds = Tex("Holds for any path from $u$ to $v$!").scale(0.6).to_corner(UR)
 
-        rect = SurroundingRectangle(Group(formula, defined, holds, formula.copy().shift(1*DOWN)), color = RED, fill_opacity = 1.0, fill_color = config.background_color, buff = 0.3)
+        rect = SurroundingRectangle(Group(formula, defined, holds, formula.copy().shift(0.5*DOWN)), color = RED, fill_opacity = 1.0, fill_color = config.background_color, buff = 0.3)
 
         ar2 = clipart_arrow().scale(0.5).rotate(-20.0/360 * 2*PI).next_to(defined, DOWN).shift(0.2*UP + 0.3*RIGHT)
         self.add_fixed_in_frame_mobjects(rect, defined, ar2) # TODO jak to udelat aby se formula nezobrazila dvakrat?
 
         self.play(FadeIn(rect), FadeIn(defined), FadeIn(ar2))
         self.wait()
+        
 
         self.add_fixed_in_frame_mobjects(formula[0])
         self.play(FadeIn(formula[0]))
@@ -682,14 +734,47 @@ class Chapter14(ThreeDScene):  # TODO check návaznost
         )
         self.wait()
 
+
+
+        sc = 2.0
+        e1 = (0, 7)
+        num1 = G.edge_weights_objs[e1].copy()
+        b1 = SurroundingRectangle(num1, color = BACKGROUND_COLOR, fill_opacity = 1, fill_color = BACKGROUND_COLOR, buff = 0.0)
+        e2 = (7, 0)
+        num2 = G.edge_weights_objs[e2].copy()
+        b2 = SurroundingRectangle(num2, color = BACKGROUND_COLOR, fill_opacity = 1, fill_color = BACKGROUND_COLOR, buff = 0.0)
+
+
+        self.add(b1, b2, num1, num2)
+        self.play(Group(b1, num1).animate.scale(sc))
+        self.wait()
+        self.play(Group(b1, num1).animate.scale(1.0/sc))
+        self.wait()
+        self.play(Group(b2, num2).animate.scale(sc))
+        self.wait()
+        self.play(Group(b2, num2).animate.scale(1.0/sc))
+        self.wait()
+
+
+
+
         self.play(
             *[v.animate.restore() for v in path_vertices],
             *[FadeOut(e) for e in path_edges]
         )
+        self.remove(num1, b1, num2, b2)
+        
         self.wait()
 
-
+        
         # This formula is super important because although we defined it to be true just for edges, it actually holds for any path. [holds for any path between u and v] Example: take this path from Prague to Rome. Originally, its length was bla, but the new length is smaller by 2, because that is how much higher Prague is than Rome. And if you walk along the path in the opposite direction, it gets longer by 2. 
+
+        surrec = SurroundingRectangle(formula, color = RED)
+        self.add_fixed_in_frame_mobjects(surrec)
+        self.play(FadeIn(surrec), run_time = 0.5)
+        self.play(FadeOut(surrec), run_time = 0.5)
+        self.wait()
+        
 
         # now for paths
 
@@ -701,7 +786,7 @@ class Chapter14(ThreeDScene):  # TODO check návaznost
 
 
         path_edges = []
-        path_vertices = [G.vertices[u] for u in [0, 7, 6, 5]]
+        path_vertices = [G.vertices[u] for u in [0, 7, 6, 5, 1]]
         og_length = 0
         for u,v in [(0, 7), (7, 6), (6, 5), (5, 1)]:
             path_edges.append(Line(G.vertices[u].get_center(), G.vertices[v].get_center(), color = RED))
@@ -781,10 +866,10 @@ class Chapter14(ThreeDScene):  # TODO check návaznost
 
         shft1 = 4*RIGHT
         shft2 = 7*LEFT
-        eq1 = Tex(r"$\nabla \times (\nabla \varphi) = 0$", color = RED).to_edge(DOWN).to_edge(LEFT).shift(- shft1)
-        eq2 = Tex(r"$\oint_{u \rightarrow v} (\nabla \varphi) \cdot d\ell = \varphi(v) - \varphi(u)$", color = RED).to_edge(DOWN).to_edge(RIGHT).shift(- shft2)
-        eq1 = Group(SurroundingRectangle(eq1, color = RED, fill_opacity = 1, fill_color = BACKGROUND_COLOR_LIGHT))
-        eq2 = Group(SurroundingRectangle(eq1, color = RED, fill_opacity = 1, fill_color = BACKGROUND_COLOR_LIGHT))
+        eq1 = Tex(r"$\nabla \times (\nabla \varphi) = 0$", color = GRAY).to_edge(DOWN).to_edge(LEFT).shift(- shft1)
+        eq2 = Tex(r"$\oint_{u \rightarrow v} (\nabla \varphi) \cdot d\ell = \varphi(v) - \varphi(u)$", color = GRAY).to_edge(DOWN).to_edge(RIGHT).shift(- shft2)
+        eq1 = Group(SurroundingRectangle(eq1, color = RED, fill_opacity = 1, fill_color = BACKGROUND_COLOR_LIGHT), eq1)
+        eq2 = Group(SurroundingRectangle(eq2, color = RED, fill_opacity = 1, fill_color = BACKGROUND_COLOR_LIGHT), eq2)
         self.add_fixed_in_frame_mobjects(eq1, eq2)
 
         self.play(
@@ -802,34 +887,30 @@ class Chapter14(ThreeDScene):  # TODO check návaznost
 
 
 
+buff = 0.7
+buff2 = 0.5
+def rec(color = GRAY, width = 4.1):
+    return Rectangle(
+        color = color,
+        height = width * 9.0/16,
+        width = width,
+        fill_opacity = 1.0,
+        fill_color = BACKGROUND_COLOR_DARK,
+    )
 
+def idefault():
+    Tex.set_default(color = GRAY)
+    Tex.set_default(font_size = DEFAULT_FONT_SIZE + 5)
 
-class Test3(ThreeDScene):
-    def construct(self):
-
-        self.move_camera(
-            phi= 70 * DEGREES,
-            run_time=1,
-        )
-
-        t1 = Tex("{{a}}{{a}}", color = RED)
-        self.add_fixed_in_frame_mobjects(t1)
-        self.play(FadeIn(t1))
-        self.wait()
-
-        self.play(Circumscribe(t1, color = RED))
-        self.wait()
 
 class Intermezzo1(Scene):
     def construct(self):
-        Tex.set_default(color = GRAY)
+        idefault()
 
         width = 3
         chapter_borders = Group(
-            Square(side_length = width, color = GRAY), 
-            Square(side_length = width, color = GRAY), 
-            Square(side_length = width, color = GRAY)
-        ).arrange(RIGHT, buff = 1)
+            rec(),rec(), rec()
+        ).arrange(RIGHT, buff = buff)
 
         scale = 0.7
         chapter_texts = Group(*[
@@ -838,22 +919,22 @@ class Intermezzo1(Scene):
             Tex("Implementation").scale(scale),
         ])
         for i in range(3):
-            chapter_texts[i].next_to(chapter_borders[i], DOWN)
+            chapter_texts[i].next_to(chapter_borders[i], DOWN, buff = buff2)
 
         self.play(FadeIn(chapter_borders), FadeIn(chapter_texts))
         self.wait()
 
 
+    
+
 class Intermezzo2(Scene):
     def construct(self):
-        Tex.set_default(color = GRAY)
+        idefault()
 
         width = 3
         chapter_borders = Group(
-            Square(side_length = width, color = GREEN), 
-            Square(side_length = width, color = GRAY), 
-            Square(side_length = width, color = GRAY)
-        ).arrange(RIGHT, buff = 1)
+            rec(GREEN), rec(), rec()
+        ).arrange(RIGHT, buff = buff)
 
         scale = 0.7
         chapter_texts = Group(*[
@@ -862,9 +943,9 @@ class Intermezzo2(Scene):
             Tex("Implementation").scale(scale),
         ])
         for i in range(3):
-            chapter_texts[i].next_to(chapter_borders[i], DOWN)
+            chapter_texts[i].next_to(chapter_borders[i], DOWN, buff = buff2)
 
-        Group(chapter_borders, chapter_texts).shift(2*UP)
+        Group(chapter_borders, chapter_texts).shift(2.3*UP)
         self.play(FadeIn(chapter_borders), FadeIn(chapter_texts))
         self.wait()
 
@@ -872,8 +953,8 @@ class Intermezzo2(Scene):
 
 
         # old strategy 
-        buff = 0.3
-        strategy_old_group = create_strategy(old=True).to_edge(DOWN, buff = buff)
+        buff3 = 0.3
+        strategy_old_group = create_strategy(old=True).to_edge(DOWN, buff = buff3)
         strategy_old = strategy_old_group[1]
         self.play(
             FadeIn(strategy_old_group),
@@ -884,7 +965,7 @@ class Intermezzo2(Scene):
         self.add(a)
 
         # new strategy
-        strategy_new_group = create_strategy(old = False).to_edge(DOWN, buff = buff)
+        strategy_new_group = create_strategy(old = False).to_edge(DOWN, buff = buff3)
         strategy_new = strategy_new_group[1]
 
         self.play(
@@ -924,14 +1005,12 @@ class Intermezzo2(Scene):
 
 class Intermezzo3(Scene):
     def construct(self):
-        Tex.set_default(color = GRAY)
+        idefault()
 
         width = 3
         chapter_borders = Group(
-            Square(side_length = width, color = GREEN), 
-            Square(side_length = width, color = GREEN), 
-            Square(side_length = width, color = GRAY)
-        ).arrange(RIGHT, buff = 1)
+            rec(GREEN), rec(GREEN), rec()
+        ).arrange(RIGHT, buff = buff)
 
         scale = 0.7
         chapter_texts = Group(*[
@@ -940,7 +1019,7 @@ class Intermezzo3(Scene):
             Tex("Implementation").scale(scale),
         ])
         for i in range(3):
-            chapter_texts[i].next_to(chapter_borders[i], DOWN)
+            chapter_texts[i].next_to(chapter_borders[i], DOWN, buff = buff2)
 
         self.play(FadeIn(chapter_borders), FadeIn(chapter_texts))
         self.wait()
@@ -948,14 +1027,12 @@ class Intermezzo3(Scene):
 
 class Intermezzo4(Scene):
     def construct(self):
-        Tex.set_default(color = GRAY)
+        idefault()
 
         width = 3
         chapter_borders = Group(
-            Square(side_length = width, color = GREEN), 
-            Square(side_length = width, color = GREEN), 
-            Square(side_length = width, color = GREEN)
-        ).arrange(RIGHT, buff = 1)
+            rec(GREEN), rec(GREEN), rec(GREEN)
+        ).arrange(RIGHT, buff = buff)
 
         scale = 0.7
         chapter_texts = Group(*[
@@ -964,7 +1041,7 @@ class Intermezzo4(Scene):
             Tex("Implementation", color = GREEN).scale(scale),
         ])
         for i in range(3):
-            chapter_texts[i].next_to(chapter_borders[i], DOWN)
+            chapter_texts[i].next_to(chapter_borders[i], DOWN, buff = buff2)
 
         self.play(FadeIn(chapter_borders), FadeIn(chapter_texts))
         self.wait()

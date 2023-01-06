@@ -713,7 +713,7 @@ def clipart_map_europe(scale = 1, undirected = True, rate = 0.5, setup_potential
         return pnt/50.0 * scale
 
     #### boundary
-    background = Rectangle(fill_color = BASE02, fill_opacity = 1, height = 9 + (100 if weird_bug else 0), width =15 + (100 if weird_bug else 0), z_index = -100)
+    background = Rectangle(color = BASE02, fill_color = BASE02, fill_opacity = 1, height = 9 + (100 if weird_bug else 0), width =15 + (100 if weird_bug else 0), z_index = -100)
     europe_boundary = Polygon(
         *[normalize(pnt) for pnt in pnts_europe],
         color = BASE02,
@@ -730,11 +730,13 @@ def clipart_map_europe(scale = 1, undirected = True, rate = 0.5, setup_potential
 
     #### cities
     G = CustomGraph([], [])
-    #G.make_directed(False)
+    
+    # for v in G.vertices.keys():
+    #     G.vertices[v] = Cylinder(radius = G.vertices[v].radius, color = G.vertices[v].color, height = 0.01).move_to(G.vertices[v].get_center())
 
     cities = []
     for i, pnts in enumerate(pnts_cities):
-        G.add_vertices(i, positions = {i: normalize(pnts[1])*RIGHT + normalize(pnts[2])*UP})
+        G.add_vertices(i, positions = {i: normalize(pnts[1])*RIGHT + normalize(pnts[2])*UP})#, vertex_type = Cylinder)
         G.vertices[i].scale(1).shift(shft).set_color(GRAY)
 
     MADRID = 25
@@ -856,13 +858,13 @@ list_properties_str = [
 def create_potential_list(options, heuristic = False):
     list_header_scale = 1.1
     list_properties_scale = 1
-    list_header = Tex("Good potential satisfies: ", z_index = 1000000, font_size = 35).scale(list_header_scale)
+    list_header = Tex("Good potential satisfies: ", z_index = 100, font_size = 35).scale(list_header_scale)
     if heuristic == True:
-        list_header = Tex("Good heuristic satisfies: ", z_index = 1000000, font_size = 35).scale(list_header_scale)
+        list_header = Tex("Good heuristic satisfies: ", z_index = 100, font_size = 35).scale(list_header_scale)
         
     list_properties = []
     for i in range(4):
-        txt = Tex(list_properties_str[i][options[i]], font_size = 30, z_index = 1000000).scale(list_properties_scale)
+        txt = Tex(list_properties_str[i][options[i]], font_size = 30, z_index = 100).scale(list_properties_scale)
         list_properties.append(txt)
 
 
@@ -877,12 +879,12 @@ def create_potential_list(options, heuristic = False):
 
     border = SurroundingRectangle(
         Group(list_header, *list_properties), 
-        corner_radius = 0.3, 
+        #corner_radius = 0.3, 
         fill_opacity = 1, 
         fill_color = config.background_color, 
         color = RED)
 
-    return Group(border, list_header, *list_properties).set_z_index(1000).move_to(ORIGIN)
+    return Group(border, list_header, *list_properties).set_z_index(100).move_to(ORIGIN)
 
 def create_strategy(old=True, scale = 1):
 
@@ -923,7 +925,7 @@ def basicDijkstraRun(scene, G, variant = None):
 
     scene.play(
         *[FadeOut(line) for (edge, line) in lines.items() if edge not in path_edges],
-        *[G.vertices[node].animate.restore() for node in G.vertices.keys() if node not in red_nodes],
+        *[G.vertices[node].animate.restore() for node in G.vertices.keys() if node not in path_nodes],
     )
     scene.wait()        
     scene.play(

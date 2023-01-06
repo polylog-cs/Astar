@@ -61,9 +61,9 @@ class CustomGraph(Graph):
 
 
     def create_name(self, vertex, name, offset, scale = 0.5):
-        self.vertex_names[vertex] = Tex(name, color=GRAY).scale(scale).move_to(self.vertices[vertex].get_center()).shift(offset)
+        self.vertex_names[vertex] = Tex(name, color=GRAY, font_size = DEFAULT_FONT_SIZE).scale(scale).move_to(self.vertices[vertex].get_center()).shift(offset)
         self.vertex_names[vertex].add_updater(
-            lambda mob: mob.move_to(self.vertices[vertex].get_center()).shift(offset)
+            lambda mob, dt: mob.move_to(self.vertices[vertex].get_center()).shift(offset)
         )
 
     def show_names(self, vertices):
@@ -91,7 +91,7 @@ class CustomGraph(Graph):
         self.edge_weights_vals[edge] = ValueTracker(weight)
         number.move_to(self.edges[edge].get_center()).shift(offset)
         number.add_updater(
-            lambda mob: mob.move_to(self.edges[edge].get_center()).shift(offset)
+            lambda mob, dt: mob.move_to(self.edges[edge].get_center()).shift(offset)
         )
 
     def show_edge_lengths(self, edges):
@@ -118,7 +118,7 @@ class CustomGraph(Graph):
     def disable_heights(self):
         for v in self.vertices:
             self.vertices[v].add_updater(
-                lambda mob, v=v: mob.move_to(
+                lambda mob, dt, v=v: mob.move_to(
                     [
                         mob.get_center()[0],
                         mob.get_center()[1],
@@ -130,7 +130,7 @@ class CustomGraph(Graph):
     def disable_colors(self):
         for e in self.edges:
             self.edges[e].add_updater(
-                lambda mob: mob.set_color(GRAY)
+                lambda mob, dt: mob.set_color(GRAY)
             )
 
 
@@ -143,7 +143,7 @@ class CustomGraph(Graph):
                 self.vertex_potentials[v] = ValueTracker(potentials[v])
 
             self.vertices[v].add_updater(
-                lambda mob, v=v: mob.move_to(
+                lambda mob, dt, v=v: mob.move_to(
                     [
                         mob.get_center()[0],
                         mob.get_center()[1],
@@ -158,7 +158,7 @@ class CustomGraph(Graph):
                 color = GRAY,
                 stroke_width = 10
             ).add_updater(
-                lambda mob, v=v: mob.put_start_and_end_on(
+                lambda mob, dt, v=v: mob.put_start_and_end_on(
                     self.vertices[v].get_center(),
                     np.array([self.vertices[v].get_center()[0], self.vertices[v].get_center()[1], 0]) + 0.001*DOWN
                 )
@@ -176,10 +176,10 @@ class CustomGraph(Graph):
 
 
             self.edge_weights_objs[edge].add_updater(
-                lambda mob, edge = edge: edge_potential_updater(mob, edge, self)
+                lambda mob, dt, edge = edge: edge_potential_updater(mob, edge, self)
             )
             self.edges[edge].add_updater(
-                lambda mob, edge = edge: edge_arrow_potential_updater(mob, edge)
+                lambda mob, dt, edge = edge: edge_arrow_potential_updater(mob, edge)
             )
 
 	
@@ -238,14 +238,14 @@ class CustomGraph(Graph):
             start_pos, end_pos = compute_positions(u, v, offset)
             mob.put_start_and_end_on(start_pos, end_pos)
 
-        edge.add_updater(lambda mob, u=u, v=v, offset=offset: edge_updater(mob, u, v, offset))
+        edge.add_updater(lambda mob, dt, u=u, v=v, offset=offset: edge_updater(mob, u, v, offset))
         edge.put_start_and_end_on(start_pos, end_pos)
 
         self.create_edge_length((u,v), weight, offset_weight)
 
         return AnimationGroup(Create(edge))
 
-    def run_dijkstra(self, start_node, end_node, speed):
+    def run_dijkstra(self, start_node, end_node, speed, thumbnail = False):
         # initialize potentials and weights to default values to be sure
         for edge in self.edges:
             if not edge in self.edge_weights_vals:
@@ -329,12 +329,14 @@ class CustomGraph(Graph):
                 end_time = start_time + ratio * (end_time - start_time)
                 end_pos = ratio * end_pos + (1-ratio) * start_pos
 
+            param = 1 if thumbnail == False else 2
             line = Line(
                     start = start_pos,
                     end = end_pos,
                     buff = 0,
                     color = RED,
-                    z_index = 1000
+                    z_index = 1000,
+                    stroke_width = DEFAULT_STROKE_WIDTH * param
                 )
             all_anims.append(
                 Succession(
@@ -345,7 +347,7 @@ class CustomGraph(Graph):
                     )
                 )
             )
-            print(node, neighbor, start_time, end_time)
+            #print(node, neighbor, start_time, end_time)
             all_lines[(node, neighbor)] = line
         
         # all_anims.append(Flash(self.vertices[PRAGUE], color = RED))
